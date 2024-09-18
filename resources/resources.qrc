@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="pressureDisplay">
+    <file>footPrintLeft.png</file>
+    <file>footPrintRight.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,35 @@
+#ifndef QT_PROJ_PCH_H
+#define QT_PROJ_PCH_H
+
+#include <iostream>
+#include <QWidget>
+#include <QDebug>
+#include <QtCharts>
+#include <QtCore>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QList>
+#include <QtCore/QObject>
+#include <QtCore/QPointer>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QTimer>
+#include <QtGui/QPainter>
+#include <QtGui/QPainterPath>
+#include <QtGui/QPaintEvent>
+#include <QtGui/QMouseEvent>
+#include <QtGui/QWheelEvent>
+#include <QtGui/QPixmap>
+#include <QtCore/QVector>
+#include <QtCore/QString>
+#include <QtCore/QDateTime>
+#include <QtCore/QMultiMap>
+#include <QtCore/QFlags>
+#include <QtCore/QDebug>
+#include <QtCore/QStack>
+#include <QtCore/QCache>
+#include <QtCore/QMargins>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+
+#endif //QT_PROJ_PCH_H
