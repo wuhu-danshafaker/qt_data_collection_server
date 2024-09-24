@@ -14,8 +14,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_server = nullptr;
 
-    databaseInit();
+    // TODO:
+    // 按键发送广播，接收不再自动发送。
 
+    databaseInit();
     fsrBtnInit();
     setAsBtnInit();
 
@@ -27,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     tcpConnected = false;
     recording = false;
+    qDebug() << "mainThread:" << QThread::currentThreadId();
 }
 
 MainWindow::~MainWindow() {
@@ -35,6 +38,9 @@ MainWindow::~MainWindow() {
     delete m_server;
     delete rightFoot;
     delete leftFoot;
+
+    udpThread->quit();
+    delete udpThread;
 }
 
 void MainWindow::on_tcpBtn_clicked() {
@@ -48,6 +54,9 @@ void MainWindow::on_tcpBtn_clicked() {
         ui->tcpMsg->append("开始监听……");
         ui->tcpBtn->setText("Disconnect");
         tcpConnected = true;
+        udpThread = new UdpThread(m_server);
+        udpThread->start();
+
     } else {
         // 不清空socket连接,直接进行删除，因此removeInfo不会运行，需要手动clear clientComboBox
 
@@ -62,6 +71,14 @@ void MainWindow::on_tcpBtn_clicked() {
         pTimer->stop();
         tcpConnected = false;
     }
+}
+
+void MainWindow::on_broadcast_clicked() {
+    if (!udpThread) {
+        QMessageBox::critical(this, "Failed", "The UDP thread must be created.");
+        return;
+    }
+    emit udpThread->broadcastInst("Here is esp32s3.");
 }
 
 void MainWindow::on_recordBtn_clicked() {
@@ -82,7 +99,6 @@ void MainWindow::on_recordBtn_clicked() {
         baseTime = QTime::currentTime();
         pTimer->start(800);
         connect(pTimer, &QTimer::timeout, this, &MainWindow::updateTimeAndDisplay);
-
 
         leftFoot->startDisplay(name);
         rightFoot->startDisplay(name);
@@ -176,18 +192,21 @@ void MainWindow::setAsBtnClicked() {
     QString espIp = comboBox->currentText();
     QVariant var = comboBox->currentData();
     if(!espIp.isEmpty()){
+        qDebug() << espIp;
         QString str = QString("%1%2").arg(btn->property("type").toString(), "Is");
-        auto *espIs = ui->clientAndType->findChild<QLabel *>(str);
-        Q_ASSERT(espIs);
-        espIs->setText(espIp);
-
         auto idx = var.value<qsizetype>();
         qDebug() << idx;
         if(str=="LeftIs"){
+            auto *espIs = ui->LeftIs;
+            espIs->setText(espIp);
+            Q_ASSERT(espIs);
             leftFoot->setIdx(idx);
             leftFoot->setSocket(m_server->list_information[idx].getSocket());
         }
         if(str=="RightIs"){
+            auto *espIs = ui->RightIs;
+            espIs->setText(espIp);
+            Q_ASSERT(espIs);
             rightFoot->setIdx(idx);
             rightFoot->setSocket(m_server->list_information[idx].getSocket());
         }

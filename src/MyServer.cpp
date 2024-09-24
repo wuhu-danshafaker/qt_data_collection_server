@@ -4,9 +4,7 @@
 
 #include "MyServer.h"
 #include "MySocket.h"
-//Q_MOC_INCLUDE("MySocket.h")
 #include "mainwindow.h"
-//#include <QVariant>
 
 MyServer::MyServer(QObject *parent) :  QTcpServer(parent) {
     mainWindow = dynamic_cast<MainWindow*>(parent);

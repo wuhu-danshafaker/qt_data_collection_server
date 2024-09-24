@@ -13,6 +13,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
+#include "UdpSocket.h"
 #include "RecvMsgThread.h"
 #include "MsgData.h"
 #include "FSRDisplay.h"
@@ -37,6 +38,7 @@ private slots:
     void on_tcpBtn_clicked();
     void on_recordBtn_clicked();
     void on_addNewDoc_clicked();
+    void on_broadcast_clicked();
 
     void updateTimeAndDisplay();
     void fsrBtnClicked();
@@ -52,11 +54,11 @@ private:
     QString showStr;
     QList<QPushButton*> fsrBtnList;
 
-    // 如果是指针则需要进行初始化，即new操作。
     FSRDisplay *leftFoot;
     FSRDisplay *rightFoot;
 
     MyServer *m_server;
+    UdpThread *udpThread;
 
     bool tcpConnected;
     bool recording;

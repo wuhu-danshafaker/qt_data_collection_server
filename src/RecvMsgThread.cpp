@@ -28,7 +28,7 @@ void RecvMsgThread::run() {
             if(tmpData.MsgByteExplain()){
                 emit resultReady(tmpData);
                 dataOnce << QString::number(tmpData.timeCounter);
-                for (double i : tmpData.adc_vol){
+                for (double i : tmpData.fsr){
                     dataOnce << QString::number(i);
                 }
                 for (double i : tmpData.ntc){

@@ -33,7 +33,6 @@ void socketThread::run() {
     exec();
 }
 
-
 SocketHelper::SocketHelper(QObject *parent){
     this->myServer = dynamic_cast<MyServer*>(parent);
 }

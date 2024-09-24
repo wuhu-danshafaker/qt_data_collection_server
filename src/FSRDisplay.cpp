@@ -149,6 +149,7 @@ void FSRDisplay::showFsr(int i) {
     bool vis = FsrGraphs[i]->visible();
     FsrGraphs[i]->setVisible(!vis);
     fsrPlot->legend->item(i)->setVisible(!vis);
+    fsrPlot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void FSRDisplay::setImuUI(QCustomPlot *pcustom) {
