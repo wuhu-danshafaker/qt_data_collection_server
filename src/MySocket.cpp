@@ -113,10 +113,10 @@ void MySocket::setIpAndPort(QString ipInfo, quint16 portInfo) {
 
 void MySocket::setCsvPath(bool isLeft, const QString& name) {
     QDateTime currentDateTime = QDateTime::currentDateTime();
-    QString timeStr = currentDateTime.toString("MM_dd_hh_mm");
+    QString timeStr = currentDateTime.toString("MMdd-hh_mm_ss");
     QString foot = (isLeft) ? "left" : "right";
     QString csvDir = QString("../csvData/%1").arg(name);
-    QString csvName = QString("%1_%2_%3.csv").arg(ip, foot, timeStr);
+    QString csvName = QString("%1_%2_%3_%4.csv").arg(name, foot, timeStr, ip);
     initRMT(csvDir, csvName);
 }
 

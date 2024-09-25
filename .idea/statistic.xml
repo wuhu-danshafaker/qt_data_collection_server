@@ -6,7 +6,8 @@
       <list>
         <option value="$PROJECT_DIR$/cmake-build-debug-mingw" />
         <option value="$PROJECT_DIR$/cmake-build-release-mingw" />
-        <option value="$PROJECT_DIR$/src" />
+        <option value="$PROJECT_DIR$/src_qCustomPlot" />
+        <option value="$PROJECT_DIR$/unused" />
       </list>
     </option>
   </component>

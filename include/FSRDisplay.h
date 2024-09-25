@@ -32,7 +32,7 @@ public:
         return index;
     }
     void setSocket(MySocket *sock);
-    void startDisplay(const QString& name);
+    void startDisplay(const QString& name, bool isResume = false);
     void pauseDisplay();
     void setIsLeft(bool flag){
         isLeft = flag;

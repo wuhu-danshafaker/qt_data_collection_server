@@ -14,9 +14,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_server = nullptr;
 
-    // TODO:
-    // 按键发送广播，接收不再自动发送。
-
     databaseInit();
     fsrBtnInit();
     setAsBtnInit();
@@ -25,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     leftFoot = new FSRDisplay();
     displayInit();
 
-    pTimer = new QTimer;
+    pTimer = nullptr;
 
     tcpConnected = false;
     recording = false;
@@ -59,7 +56,9 @@ void MainWindow::on_tcpBtn_clicked() {
 
     } else {
         // 不清空socket连接,直接进行删除，因此removeInfo不会运行，需要手动clear clientComboBox
-
+        udpThread->quit();
+        delete udpThread;
+        udpThread = nullptr;
         m_server->close();
         delete m_server;
         m_server = nullptr;
@@ -94,21 +93,25 @@ void MainWindow::on_recordBtn_clicked() {
         return;
     }
 
-    if(!recording){
-        qDebug()<<"recording";
+    bool isResume = true;
+    // 初次按下
+    if(!pTimer){
+        pTimer = new QTimer;
         baseTime = QTime::currentTime();
-        pTimer->start(800);
         connect(pTimer, &QTimer::timeout, this, &MainWindow::updateTimeAndDisplay);
+        isResume = false;
+    }
 
-        leftFoot->startDisplay(name);
-        rightFoot->startDisplay(name);
-
+    if(!recording){
+        qDebug()<<"start recording";
+        pTimer->start(800);
+        leftFoot->startDisplay(name, isResume);
+        rightFoot->startDisplay(name, isResume);
         recording = true;
         on_addServerMessage("pTimer: recording");
     } else{
         pTimer->stop();
         recording = false;
-
         leftFoot->pauseDisplay();
         rightFoot->pauseDisplay();
     }

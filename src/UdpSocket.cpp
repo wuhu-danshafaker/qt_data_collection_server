@@ -6,6 +6,7 @@ UdpSocket::UdpSocket(QObject *parent) : QObject(parent){
 }
 
 UdpSocket::~UdpSocket(){
+    udp_sock->close();
     delete udp_sock;
 }
 
@@ -32,7 +33,7 @@ void UdpSocket::onReadyReadData() {
         data.resize(udp_sock->pendingDatagramSize());
         udp_sock->readDatagram(data.data(), data.size(), &udp_hostAddr, &udp_port);
         emit recvDataSignal(data);
-        emit addMsg(QString("UDP [%1:%2] : %3").arg(udp_hostAddr.toString(), QString(udp_port), data));
+        emit addMsg(QString("UDP [%1] : %3").arg(udp_hostAddr.toString(), data));
     }
 }
 
@@ -60,6 +61,8 @@ UdpThread::UdpThread(MyServer *server, QObject *parent) : QThread(parent){
 }
 
 UdpThread::~UdpThread(){
+    this->disconnect();
+    udpSocket->disconnect();
     delete udpSocket;
 }
 

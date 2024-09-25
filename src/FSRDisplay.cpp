@@ -168,21 +168,24 @@ void FSRDisplay::setSocket(MySocket *sock) {
     socket = sock;
 }
 
-void FSRDisplay::startDisplay(const QString& name) {
+void FSRDisplay::startDisplay(const QString& name, bool isResume) {
     if(!socket){
-        qDebug() << "尚未绑定socket!";
+        QString lor = (isLeft) ? "left" : "right";
+        qDebug() << lor + " 尚未绑定socket!";
         return;
     }
     socket->setCsvPath(isLeft, name);
     RecvMsgThread *rmtForClient = socket->getRMT();
     rmtForClient->resume();
     connect(rmtForClient, &RecvMsgThread::resultReady, this, &FSRDisplay::updateFootPrint);
-    emit socket->writeMsg("CMD: start record");  // emit以后 槽函数会在socketThread中运行而非主线程
+    QByteArray cmd = isResume ? "CMD: resume record" : "CMD: start record";
+    emit socket->writeMsg(cmd);  // emit以后 槽函数会在socketThread中运行而非主线程
 }
 
 void FSRDisplay::pauseDisplay() {
     if(!socket){
-        qDebug() << "尚未绑定socket!";
+        QString lor = (isLeft) ? "left" : "right";
+        qDebug() << lor + " 尚未绑定socket!";
         return;
     }
     RecvMsgThread *rmtForClient = socket->getRMT();
