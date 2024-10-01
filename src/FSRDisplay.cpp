@@ -2,10 +2,10 @@
 
 void FSRDisplay::updateFootPrint(const MsgData& msg) {
     for(int i=0;i<8;i++){
-        qreal ratio = std::min(msg.adc_vol[i]/3000.0, 1.0);  // 3000!
+        qreal ratio = std::min(msg.fsr[i]/20.0, 1.0);  // 3000!
         colors[i] = interpolate(Qt::red, QColor(85, 170, 127), ratio);
         circles[i]->setBrush(QBrush(colors[i]));
-        FsrGraphs[i]->addData(msg.timeCounter, msg.adc_vol[i]);
+        FsrGraphs[i]->addData(msg.timeCounter, msg.fsr[i]);
         if(msg.timeCounter>500){
             FsrGraphs[i]->data()->removeBefore(200);
         }
@@ -17,21 +17,25 @@ void FSRDisplay::updateFootPrint(const MsgData& msg) {
     tempBar->setData({1,2,3,4},temp);
     for(int i=0;i<9;i++){
         ImuGraphs[i]->addData(msg.timeCounter, msg.imuAGE[i]);
-        ImuGraphs[i]->data()->removeBefore(200);
+        if(msg.imuAGE[i]!=10&&isLeft){
+            qDebug() << msg.imuAGE[i];
+        }
+        if(msg.timeCounter>500){
+            ImuGraphs[i]->data()->removeBefore(200);
+        }
     }
-    dataCounter++;
-    if (dataCounter>=10){
+    dataCounter--;
+    if (dataCounter<=0){
         fsrFootPrint->replot(QCustomPlot::rpQueuedReplot);
         fsrPlot->xAxis->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
         fsrPlot->replot(QCustomPlot::rpQueuedReplot);
         for(int i=0;i<3;i++){
             imuPlot->axisRect(i)->axis(QCPAxis::atBottom)->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
-            imuPlot->axisRect(i)->axis(QCPAxis::atLeft)->rescale();
+//            imuPlot->axisRect(i)->axis(QCPAxis::atLeft)->rescale();
         }
-//        imuPlot->xAxis->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
         imuPlot->replot(QCustomPlot::rpQueuedReplot);
         tempPlot->replot(QCustomPlot::rpQueuedReplot);
-        dataCounter = 0;
+        dataCounter = 10;
     }
 }
 
@@ -77,21 +81,21 @@ void FSRDisplay::setupPlot() {
         circles[i]->setBrush(QBrush(QColor(85, 170, 127)));
         FsrGraphs[i] = fsrPlot->addGraph();
         FsrGraphs[i]->setName("fsr " + QString::number(i+1));
-        FsrGraphs[i]->setVisible(false);
+        FsrGraphs[i]->setVisible(true);
         FsrGraphs[i]->setPen(DataColor[i]);
-        fsrPlot->legend->item(i)->setVisible(false);
+        fsrPlot->legend->item(i)->setVisible(true);
     }
 
 //    qDebug() << "setfsr";
     fsrPlot->xAxis->setRange(200, 200, Qt::AlignRight);
-    fsrPlot->yAxis->setRange(0, 3200);
-    FsrGraphs[0]->setVisible(true);
+    fsrPlot->yAxis->setRange(0, 50);
+//    FsrGraphs[0]->setVisible(true);
     auto *fsrLegendLayout = new QCPLayoutGrid;
     fsrPlot->plotLayout()->addElement(0, 1, fsrLegendLayout);
     fsrLegendLayout->setMargins(QMargins(0, 5, 5, 50));
     fsrLegendLayout->addElement(0, 0, fsrPlot->legend);
     fsrPlot->plotLayout()->setColumnStretchFactor(1, 0.001);
-    fsrPlot->legend->item(0)->setVisible(true);
+//    fsrPlot->legend->item(0)->setVisible(true);
 
     auto *imuAcc = new QCPAxisRect(imuPlot);
     auto *imuGyro = new QCPAxisRect(imuPlot);
@@ -102,7 +106,8 @@ void FSRDisplay::setupPlot() {
     imuPlot->plotLayout()->addElement(2, 0, imuEuler);
     for(int i=0;i<3;i++){
         imuPlot->axisRect(i)->axis(QCPAxis::atBottom)->setRange(200, 200, Qt::AlignRight);
-        imuPlot->axisRect(i)->axis(QCPAxis::atLeft)->rescale();
+//        imuPlot->axisRect(i)->axis(QCPAxis::atLeft)->rescale();
+        imuPlot->axisRect(i)->axis(QCPAxis::atLeft)->setRange(-1,12);
     }
 
     QString legendName[3] = {"X", "Y", "Z"};
@@ -117,6 +122,8 @@ void FSRDisplay::setupPlot() {
         ImuGraphs[i+6]->setName("Euler" + legendName[i]);
         ImuGraphs[i+6]->setPen(DataColor[i*3+1]);
     }
+    imuPlot->setAutoAddPlottableToLegend(true);
+//    imuPlot->legend->setVisible(true);
 
     tempBar = new QCPBars(tempPlot->xAxis, tempPlot->yAxis);
     tempBar->setAntialiased(false);
@@ -176,8 +183,8 @@ void FSRDisplay::startDisplay(const QString& name, bool isResume) {
     }
     socket->setCsvPath(isLeft, name);
     RecvMsgThread *rmtForClient = socket->getRMT();
+    connect(rmtForClient, &RecvMsgThread::resultReady, this, &FSRDisplay::updateFootPrint, Qt::BlockingQueuedConnection);
     rmtForClient->resume();
-    connect(rmtForClient, &RecvMsgThread::resultReady, this, &FSRDisplay::updateFootPrint);
     QByteArray cmd = isResume ? "CMD: resume record" : "CMD: start record";
     emit socket->writeMsg(cmd);  // emit以后 槽函数会在socketThread中运行而非主线程
 }

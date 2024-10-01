@@ -104,6 +104,7 @@ void MainWindow::on_recordBtn_clicked() {
 
     if(!recording){
         qDebug()<<"start recording";
+        baseTime = QTime::currentTime();
         pTimer->start(800);
         leftFoot->startDisplay(name, isResume);
         rightFoot->startDisplay(name, isResume);

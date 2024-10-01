@@ -26,8 +26,7 @@ void RecvMsgThread::run() {
         if (!msgQueue->isEmpty()){
             tmpData = msgQueue->dequeue();
             if(tmpData.MsgByteExplain()){
-                emit resultReady(tmpData);
-                dataOnce << QString::number(tmpData.timeCounter);
+                dataOnce << QString::number(tmpData.timeCounter) << QString::number(tmpData.vcc);
                 for (double i : tmpData.fsr){
                     dataOnce << QString::number(i);
                 }
@@ -37,12 +36,20 @@ void RecvMsgThread::run() {
                 for (double i : tmpData.imuAGE){
                     dataOnce << QString::number(i);
                 }
+                for (int i : tmpData.adc_vol){
+                    dataOnce << QString::number(i);
+                }
+                dataOnce << tmpData.imuArr();
                 writeDataToCsv(csvPath, dataOnce);
+                emit resultReady(tmpData);
                 dataOnce.clear();
             }
+//            usleep(1);
         }
         qMutex->unlock();
     }
+
+    exec();
 }
 
 void RecvMsgThread::writeDataToCsv(const QString &filePath, const QStringList &data) {
@@ -97,7 +104,7 @@ void RecvMsgThread::initCsv(const QString& csvDir, const QString& csvName) {
     }
 
     QStringList header;
-    header << "timeCounter";
+    header << "timeCounter" << "Vcc";
     for (int i=0;i<8;i++){
         header << "FSR"+QString::number(i);
     }
@@ -105,6 +112,9 @@ void RecvMsgThread::initCsv(const QString& csvDir, const QString& csvName) {
         header << "NTC"+QString::number(i);
     }
     header << "AccX" << "AccY" << "AccZ" << "GyroX" << "GyroY" << "GyroZ" << "EulerX" << "EulerY" << "EulerZ";
+    for (int i=0;i<13;i++){
+        header << "ADC"+QString::number(i);
+    }
     writeHeaderToCsv(csvPath, header);
 }
 

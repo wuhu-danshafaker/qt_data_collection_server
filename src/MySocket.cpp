@@ -28,7 +28,7 @@ void MySocket::deal_readyRead(){
     int msg_length = msg.size();
     int idx_header = 0;
     msg_last.clear();
-    // header 2byte; time stamp 4byte; adc 24byte; imu 72yte; total 102byte
+    // header 2byte; time stamp 4byte; adc 2+24byte; imu 72yte; total 104byte
     while(true){
         idx_header = msg.indexOf(header, idx_header);
         if(idx_header == -1){
@@ -38,14 +38,14 @@ void MySocket::deal_readyRead(){
             }
             break;
         }
-        if(idx_header+102 > msg_length){
+        if(idx_header+BYTE_LENGTH > msg_length){
             // 找到包头但最后一个数据不完整
             msg_last = msg.mid(idx_header);
             break;
         }
+
         // 正常处理数据
-        QByteArray msg_slice = msg.mid(idx_header, 102);
-        emit addMsg(QString("[%1：%2] \n%3").arg(ip).arg(port).arg(msg_slice.toHex().toUpper()));
+        QByteArray msg_slice = msg.mid(idx_header, BYTE_LENGTH);
         MsgData tmp_data;
         tmp_data.byteInput(msg_slice);
         rmt->qMutex->lock();
@@ -53,7 +53,7 @@ void MySocket::deal_readyRead(){
         rmt->qMutex->unlock();
         idx_header++;
     }
-    if (msg.size()<102){
+    if (msg.size()<BYTE_LENGTH){
         qDebug() << "initial message";
         emit addMsg(QString::fromLocal8Bit(msg));
     }
@@ -64,7 +64,6 @@ void MySocket::deal_write(const QByteArray& arr){
 }
 
 void MySocket::deal_disconnect(){
-
     qDebug() << "socket disconnected:";
     auto *tcpSocket = dynamic_cast<MySocket *>(sender());
     //断开socket
@@ -82,7 +81,6 @@ void MySocket::deal_disconnect(){
     emit socketHelper->removeList(tcpSocket);
     //释放
     tcpSocket->deleteLater();
-
 }
 
 void MySocket::deal_delete(){

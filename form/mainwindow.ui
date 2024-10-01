@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1474</width>
+    <width>1758</width>
     <height>960</height>
    </rect>
   </property>
@@ -824,7 +824,7 @@ QTabBar::tab::selected{
                <attribute name="title">
                 <string>Left</string>
                </attribute>
-               <widget class="QWidget" name="">
+               <widget class="QWidget" name="layoutWidget">
                 <property name="geometry">
                  <rect>
                   <x>40</x>
@@ -897,7 +897,7 @@ QTabBar::tab::selected{
                <attribute name="title">
                 <string>Right</string>
                </attribute>
-               <widget class="QWidget" name="">
+               <widget class="QWidget" name="layoutWidget">
                 <property name="geometry">
                  <rect>
                   <x>40</x>
