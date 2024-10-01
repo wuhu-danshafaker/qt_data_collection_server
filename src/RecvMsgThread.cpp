@@ -44,9 +44,10 @@ void RecvMsgThread::run() {
                 emit resultReady(tmpData);
                 dataOnce.clear();
             }
-//            usleep(1);
         }
+//        usleep(1);
         qMutex->unlock();
+//        usleep(1);
     }
 
     exec();

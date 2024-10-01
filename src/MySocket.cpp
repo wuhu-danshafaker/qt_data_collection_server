@@ -43,13 +43,15 @@ void MySocket::deal_readyRead(){
             msg_last = msg.mid(idx_header);
             break;
         }
-
         // 正常处理数据
         QByteArray msg_slice = msg.mid(idx_header, BYTE_LENGTH);
         MsgData tmp_data;
         tmp_data.byteInput(msg_slice);
         rmt->qMutex->lock();
         rmt->msgQueue->enqueue(tmp_data);  // 在这里修改成一个函数
+        if(ip.contains("102") && !tmp_data.imuArr().contains('@')){
+            qDebug() << tmp_data.imuArr();
+        }
         rmt->qMutex->unlock();
         idx_header++;
     }

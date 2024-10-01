@@ -17,15 +17,12 @@ void FSRDisplay::updateFootPrint(const MsgData& msg) {
     tempBar->setData({1,2,3,4},temp);
     for(int i=0;i<9;i++){
         ImuGraphs[i]->addData(msg.timeCounter, msg.imuAGE[i]);
-        if(msg.imuAGE[i]!=10&&isLeft){
-            qDebug() << msg.imuAGE[i];
-        }
         if(msg.timeCounter>500){
             ImuGraphs[i]->data()->removeBefore(200);
         }
     }
     dataCounter--;
-    if (dataCounter<=0){
+    if (true){
         fsrFootPrint->replot(QCustomPlot::rpQueuedReplot);
         fsrPlot->xAxis->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
         fsrPlot->replot(QCustomPlot::rpQueuedReplot);
