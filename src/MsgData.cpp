@@ -46,6 +46,7 @@ bool MsgData::MsgByteExplain() {
             imuArr = byteMsg.mid(imu_idx, 8);
             imuAGE[i] = qbyte2double(imuArr);
         }
+        ip_esp32s3 = ipByte2Str(byteMsg.right(4));
         return true;
     } else{
         return false;
@@ -85,7 +86,19 @@ double MsgData::ntcVol2T(int vol, double vcc_real) {
 }
 
 QByteArray MsgData::imuArr() {
-    return byteMsg.mid(40, 72);
+    return byteMsg.mid(32, 72).toHex();
+}
+
+QString MsgData::ipByte2Str(const QByteArray& src) {
+    QByteArray src_data = src;
+    if(src_data.isEmpty()){
+        src_data = byteMsg.right(4);
+    }
+    int ip1 = static_cast<byte>(src_data.at(0));
+    int ip2 = static_cast<byte>(src_data.at(1));
+    int ip3 = static_cast<byte>(src_data.at(2));
+    int ip4 = static_cast<byte>(src_data.at(3));
+    return QString("%1.%2.%3.%4").arg(ip1).arg(ip2).arg(ip3).arg(ip4);
 }
 
 //QQueue<MsgData> Msg_queue;

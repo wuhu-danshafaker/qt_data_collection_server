@@ -21,9 +21,9 @@ void MySocket::deal_readyRead(){
 
     //获取客户端发来的数据
     QByteArray msg;
-    static QByteArray msg_last = "";
+    msg_last = "";
     QByteArray header = "\x5A\x55";
-
+//    tcpSocket->read();
     msg = msg_last.append(tcpSocket->readAll());
     int msg_length = msg.size();
     int idx_header = 0;
@@ -47,12 +47,14 @@ void MySocket::deal_readyRead(){
         QByteArray msg_slice = msg.mid(idx_header, BYTE_LENGTH);
         MsgData tmp_data;
         tmp_data.byteInput(msg_slice);
-        rmt->qMutex->lock();
-        rmt->msgQueue->enqueue(tmp_data);  // 在这里修改成一个函数
-        if(ip.contains("102") && !tmp_data.imuArr().contains('@')){
-            qDebug() << tmp_data.imuArr();
+        if(ip==tmp_data.ipByte2Str()){
+            rmt->qMutex->lock();
+            rmt->msgQueue->enqueue(tmp_data);  // 在这里修改成一个函数
+            rmt->qMutex->unlock();
+        } else{
+            qDebug() << "Wrong ip!";  // 如今其实没有串包的现象，类中需慎用静态变量。
         }
-        rmt->qMutex->unlock();
+
         idx_header++;
     }
     if (msg.size()<BYTE_LENGTH){

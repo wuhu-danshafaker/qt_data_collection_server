@@ -34,6 +34,7 @@ private:
     QString ip;
     quint16 port;
 
+    QByteArray msg_last = "";
 
 public slots:
     void deal_readyRead();

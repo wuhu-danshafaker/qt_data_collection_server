@@ -39,7 +39,7 @@ void RecvMsgThread::run() {
                 for (int i : tmpData.adc_vol){
                     dataOnce << QString::number(i);
                 }
-                dataOnce << tmpData.imuArr();
+                dataOnce << tmpData.ip_esp32s3;
                 writeDataToCsv(csvPath, dataOnce);
                 emit resultReady(tmpData);
                 dataOnce.clear();
