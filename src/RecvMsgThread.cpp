@@ -116,6 +116,7 @@ void RecvMsgThread::initCsv(const QString& csvDir, const QString& csvName) {
     for (int i=0;i<13;i++){
         header << "ADC"+QString::number(i);
     }
+    header << "IP";
     writeHeaderToCsv(csvPath, header);
 }
 

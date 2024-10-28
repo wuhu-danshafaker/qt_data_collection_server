@@ -1,6 +1,9 @@
 <RCC>
   <qresource prefix="pressureDisplay">
+    <file>blur.png</file>
+    <file>wallhaven-o5lme5_3840x2160.png</file>
     <file>footPrintLeft.png</file>
     <file>footPrintRight.png</file>
+    <file>qt_icon.png</file>
   </qresource>
 </RCC>

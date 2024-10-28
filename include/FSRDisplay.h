@@ -26,6 +26,7 @@ public:
     void setImuUI(QCustomPlot *pcustom);
     void setTempUI(QCustomPlot *pcustom);
     void setupPlot();
+    void resetPlot();
     void showFsr(int i);
     void setIdx(qsizetype idx);
     qsizetype getIdx(){
@@ -34,9 +35,8 @@ public:
     void setSocket(MySocket *sock);
     void startDisplay(const QString& name, bool isResume = false);
     void pauseDisplay();
-    void setIsLeft(bool flag){
-        isLeft = flag;
-    }
+    void setIsLeft(bool flag);
+    void setFsrMap();
 
 public slots:
     void updateFootPrint(const MsgData& msg);
@@ -79,7 +79,7 @@ private:
     };
 
     QCustomPlot *fsrPlot;
-    QCPGraph *FsrGraphs[8];
+//    QCPGraph *FsrGraphs[8]; fsrPlot->graph(i);
 
     QCustomPlot *imuPlot;
     QCPGraph *ImuGraphs[9];
@@ -89,6 +89,8 @@ private:
 
     qsizetype index;
     MySocket *socket;
+
+    int fsrMap[8]={0};
 };
 
 

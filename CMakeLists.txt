@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+#set(CMAKE_EXE_LINKER_FLAGS -static)
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/form)
 set(CMAKE_PREFIX_PATH "C:/Qt/6.6.2/mingw_64")
@@ -14,7 +15,7 @@ set(CMAKE_PREFIX_PATH "C:/Qt/6.6.2/mingw_64")
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")   # 可执行文件
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-
+include_directories(${PROJECT_SOURCE_DIR}/src_qCustomPlot)
 FILE(GLOB_RECURSE HEADER_FILES ${PROJECT_SOURCE_DIR}/include/*.h)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCE_FILES)
 
@@ -31,6 +32,7 @@ find_package(Qt6 REQUIRED COMPONENTS
 )
 
 set(QRC_SOURCE_FILE resources/resources.qrc)
+set(APP_ICON_RESOURCE resources/logo.rc)
 qt_add_resources(${QRC_SOURCE_FILE})
 
 link_directories(${PROJECT_SOURCE_DIR}/lib)
@@ -40,6 +42,7 @@ add_executable(qt_proj main.cpp
         ${SOURCE_FILES}
         ${HEADER_FILES}
         ${QRC_SOURCE_FILE}
+        ${APP_ICON_RESOURCE}
 )
 
 target_precompile_headers(qt_proj PRIVATE pch.h)
@@ -55,6 +58,7 @@ target_link_libraries(qt_proj
         Qt6::Network
         Qt6::Charts
 )
+
 target_link_libraries(qt_proj qsqlite.dll)
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)

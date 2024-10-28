@@ -12,6 +12,8 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QSqlTableModel>
+#include <QSqlRecord>
 
 #include "UdpSocket.h"
 #include "RecvMsgThread.h"
@@ -39,6 +41,11 @@ private slots:
     void on_recordBtn_clicked();
     void on_addNewDoc_clicked();
     void on_broadcast_clicked();
+    void on_databaseAdd_clicked();
+    void on_databaseDelete_clicked();
+    void on_databaseConfirm_clicked();
+    void on_databaseCancel_clicked();
+    void on_databaseFind_clicked();
 
     void updateTimeAndDisplay();
     void fsrBtnClicked();
@@ -59,6 +66,8 @@ private:
 
     MyServer *m_server;
     UdpThread *udpThread;
+
+    QSqlTableModel *model;
 
     bool tcpConnected;
     bool recording;

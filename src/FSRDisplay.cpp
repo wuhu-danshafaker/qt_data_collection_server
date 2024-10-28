@@ -2,14 +2,15 @@
 
 void FSRDisplay::updateFootPrint(const MsgData& msg) {
     for(int i=0;i<8;i++){
-        qreal ratio = std::min(msg.fsr[i]/20.0, 1.0);  // 3000!
+        qreal ratio = std::min(msg.fsr[fsrMap[i]]/20.0, 1.0);  // 3000!
         colors[i] = interpolate(Qt::red, QColor(85, 170, 127), ratio);
         circles[i]->setBrush(QBrush(colors[i]));
-        FsrGraphs[i]->addData(msg.timeCounter, msg.fsr[i]);
+        fsrPlot->graph(i)->addData(msg.timeCounter, msg.fsr[fsrMap[i]]);
         if(msg.timeCounter>500){
-            FsrGraphs[i]->data()->removeBefore(200);
+            fsrPlot->graph(i)->data()->removeBefore(200);
         }
     }
+
     QVector<double> temp;
     for(double i : msg.ntc){
         temp << i;
@@ -21,19 +22,18 @@ void FSRDisplay::updateFootPrint(const MsgData& msg) {
             ImuGraphs[i]->data()->removeBefore(200);
         }
     }
-    dataCounter--;
-    if (true){
-        fsrFootPrint->replot(QCustomPlot::rpQueuedReplot);
-        fsrPlot->xAxis->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
-        fsrPlot->replot(QCustomPlot::rpQueuedReplot);
-        for(int i=0;i<3;i++){
-            imuPlot->axisRect(i)->axis(QCPAxis::atBottom)->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
-//            imuPlot->axisRect(i)->axis(QCPAxis::atLeft)->rescale();
-        }
-        imuPlot->replot(QCustomPlot::rpQueuedReplot);
-        tempPlot->replot(QCustomPlot::rpQueuedReplot);
-        dataCounter = 10;
+
+    // 原本借助 data counter 降低刷新频率，如今看来疑似没有必要
+    fsrFootPrint->replot(QCustomPlot::rpQueuedReplot);
+    fsrPlot->xAxis->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
+    fsrPlot->replot(QCustomPlot::rpQueuedReplot);
+    for(int i=0;i<3;i++){
+        imuPlot->axisRect(i)->axis(QCPAxis::atBottom)->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
+        imuPlot->axisRect(i)->axis(QCPAxis::atLeft)->rescale();
     }
+    imuPlot->replot(QCustomPlot::rpQueuedReplot);
+    tempPlot->replot(QCustomPlot::rpQueuedReplot);
+
 }
 
 QColor FSRDisplay::interpolate(QColor color1, QColor color2, qreal ratio) {
@@ -76,10 +76,10 @@ void FSRDisplay::setupPlot() {
         circles[i]->topLeft->setCoords(circle_pos[i]);
         circles[i]->bottomRight->setCoords(circle_pos[i]+circleSize);
         circles[i]->setBrush(QBrush(QColor(85, 170, 127)));
-        FsrGraphs[i] = fsrPlot->addGraph();
-        FsrGraphs[i]->setName("fsr " + QString::number(i+1));
-        FsrGraphs[i]->setVisible(true);
-        FsrGraphs[i]->setPen(DataColor[i]);
+        auto fsrGraph = fsrPlot->addGraph();
+        fsrGraph->setName("fsr " + QString::number(i+1));
+        fsrGraph->setVisible(true);
+        fsrGraph->setPen(DataColor[i]);
         fsrPlot->legend->item(i)->setVisible(true);
     }
 
@@ -150,8 +150,10 @@ void FSRDisplay::showFsr(int i) {
        qDebug() << "Subgraph index exceeded range";
        return;
     }
-    bool vis = FsrGraphs[i]->visible();
-    FsrGraphs[i]->setVisible(!vis);
+//    bool vis = FsrGraphs[i]->visible();
+//    FsrGraphs[i]->setVisible(!vis);
+    bool vis = fsrPlot->graph(i)->visible();
+    fsrPlot->graph(i)->setVisible(!vis);
     fsrPlot->legend->item(i)->setVisible(!vis);
     fsrPlot->replot(QCustomPlot::rpQueuedReplot);
 }
@@ -180,7 +182,7 @@ void FSRDisplay::startDisplay(const QString& name, bool isResume) {
     }
     socket->setCsvPath(isLeft, name);
     RecvMsgThread *rmtForClient = socket->getRMT();
-    connect(rmtForClient, &RecvMsgThread::resultReady, this, &FSRDisplay::updateFootPrint, Qt::BlockingQueuedConnection);
+    connect(rmtForClient, &RecvMsgThread::resultReady, this, &FSRDisplay::updateFootPrint);
     rmtForClient->resume();
     QByteArray cmd = isResume ? "CMD: resume record" : "CMD: start record";
     emit socket->writeMsg(cmd);  // emit以后 槽函数会在socketThread中运行而非主线程
@@ -198,4 +200,49 @@ void FSRDisplay::pauseDisplay() {
     rmtForClient->pause();
     emit socket->writeMsg("CMD: pause record");
     // 断了以后要重新连接，然而在此之前居然已经删掉了socket的连接，这是因为stop之后esp端主动切断此连接了。
+}
+
+void FSRDisplay::setFsrMap() {
+    if (isLeft){
+        fsrMap[0]=3;
+        fsrMap[1]=4;
+        fsrMap[2]=2;
+        fsrMap[3]=0;
+        fsrMap[4]=1;
+        fsrMap[5]=7;
+        fsrMap[6]=5;
+        fsrMap[7]=6;
+    } else{
+        // wait for change
+        fsrMap[0]=1;
+        fsrMap[1]=0;
+        fsrMap[2]=2;
+        fsrMap[3]=3;
+        fsrMap[4]=4;
+        fsrMap[5]=5;
+        fsrMap[6]=7;
+        fsrMap[7]=6;
+    }
+}
+
+void FSRDisplay::setIsLeft(bool flag) {
+    isLeft = flag;
+    setFsrMap();
+}
+
+void FSRDisplay::resetPlot() {
+    if(!fsrPlot || !imuPlot || !tempPlot) return;
+    // fsr
+    for(int i=0;i<8;i++){
+        fsrPlot->graph(i)->data().data()->clear();
+    }
+    // imu
+    for(auto imuGraph : ImuGraphs){
+        imuGraph->data().data()->clear();
+    }
+    //ntc
+    tempBar->data().data()->clear();
+    fsrPlot->replot(QCustomPlot::rpQueuedReplot);
+    imuPlot->replot(QCustomPlot::rpQueuedReplot);
+    tempPlot->replot(QCustomPlot::rpQueuedReplot);
 }

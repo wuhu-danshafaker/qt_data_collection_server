@@ -7,10 +7,14 @@
 #include "MyServer.h"
 #include "MySocket.h"
 #include "ui_MainWindow.h"
+//#include <QGraphicsBlurEffect>
 
 MainWindow::MainWindow(QWidget *parent) :
         QWidget(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+    this->setWindowIcon(QIcon("../resources/qt_icon.png"));
+    this->setWindowTitle("Oiseau Monitor");
+    this->setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 
     m_server = nullptr;
 
@@ -24,9 +28,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
     pTimer = nullptr;
 
+    model = new QSqlTableModel(this);
+    model->setTable("patient");
+    ui->databaseView->setModel(model);
+    model->select();
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+
     tcpConnected = false;
     recording = false;
     qDebug() << "mainThread:" << QThread::currentThreadId();
+
+    ui->Body->setContentsMargins(0,0,0,0);
+//    auto *blurEffect = new QGraphicsBlurEffect;
+//    ui->Body->setGraphicsEffect(blurEffect);
 }
 
 MainWindow::~MainWindow() {
@@ -35,7 +49,6 @@ MainWindow::~MainWindow() {
     delete m_server;
     delete rightFoot;
     delete leftFoot;
-
     udpThread->quit();
     delete udpThread;
 }
@@ -103,7 +116,9 @@ void MainWindow::on_recordBtn_clicked() {
     }
 
     if(!recording){
-        qDebug()<<"start recording";
+        qDebug()<<"restart recording";
+        leftFoot->resetPlot();
+        rightFoot->resetPlot();
         baseTime = QTime::currentTime();
         updateTimeAndDisplay();
         pTimer->start(800);
@@ -258,11 +273,24 @@ void MainWindow::databaseInsert(const QString& name,
         qDebug() << "Error: Failed to connect database." << database.lastError();
     } else{
         QSqlQuery sqlQuery;
+//        QString insert_sql = QString("insert into patient "
+//                                     "(id, name, date_time, age, height, weight, information, csv_path) "
+//                                     "values (null, '%1', '%2', %3, %4, %5, '%6', '%7')")
+//                .arg(name, date, age, height, weight, info, csv_path);
+//        sqlQuery.prepare(insert_sql);
         QString insert_sql = QString("insert into patient "
                                      "(id, name, date_time, age, height, weight, information, csv_path) "
-                                     "values (null, '%1', '%2', %3, %4, %5, '%6', '%7')")
-                .arg(name, date, age, height, weight, info, csv_path);
+                                     "values (:id, :name, :date_time, :age, :height, :weight, :information, "
+                                     ":csv_path)");
         sqlQuery.prepare(insert_sql);
+        sqlQuery.bindValue(":name", name);
+        sqlQuery.bindValue(":date_time", date);
+        sqlQuery.bindValue(":age", age);
+        sqlQuery.bindValue(":height", height);
+        sqlQuery.bindValue(":weight", weight);
+        sqlQuery.bindValue(":information", info);
+        sqlQuery.bindValue(":csv_path", csv_path);
+
         if(!sqlQuery.exec()){
             qDebug() << sqlQuery.lastError();
         } else{
@@ -270,6 +298,7 @@ void MainWindow::databaseInsert(const QString& name,
         }
     }
     database.close();
+    database.open();
 }
 
 void MainWindow::on_addNewDoc_clicked() {
@@ -314,6 +343,63 @@ void MainWindow::on_addNewDoc_clicked() {
         }
     }
     databaseInsert(name, date_time, age, height, weight, info, csvPath);
+}
+
+void MainWindow::on_databaseAdd_clicked() {
+    QSqlRecord record = model->record();
+    int row = model->rowCount();
+    model->insertRecord(row, record);
+}
+
+void MainWindow::on_databaseDelete_clicked() {
+    QItemSelectionModel *sModel = ui->databaseView->selectionModel();
+    QModelIndexList list = sModel->selectedRows();
+    if(!list.isEmpty()){
+        for (const auto & i : list) {
+            model->removeRow(i.row());
+        }
+    } else {
+        int curRow = ui->databaseView->currentIndex().row();
+        model->removeRow(curRow);
+    }
+
+}
+
+void MainWindow::on_databaseConfirm_clicked() {
+    model->submitAll();
+}
+
+void MainWindow::on_databaseCancel_clicked() {
+    model->revertAll();
+    model->submitAll();
+}
+
+void MainWindow::on_databaseFind_clicked() {
+    QString keyDate = ui->findByDate->text();
+    QString keyName = ui->findByName->text();
+    QString filterStr = "";
+    QList<QString> filterList;
+    if(!keyDate.isEmpty()){
+        filterList.append(QString("date_time = '%1'").arg(keyDate));
+    }
+    if(!keyName.isEmpty()){
+        filterList.append(QString("name = '%1'").arg(keyName));
+    }
+    if(!filterList.isEmpty()){
+        filterStr = filterList.at(0);
+        for(int i=1;i<filterList.size();i++){
+            filterStr = filterStr + " and " + filterList.at(i);
+        }
+        if(filterList.size()>1){
+            filterStr = "(" + filterStr + ")";
+        }
+        model->setFilter(filterStr);
+        model->select();
+    } else{
+        model->setTable("patient");
+        model->select();
+    }
+    qDebug() << "FIND: " << filterStr;
 }
 
 
