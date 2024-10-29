@@ -45,6 +45,12 @@ add_executable(qt_proj main.cpp
         ${APP_ICON_RESOURCE}
 )
 
+set_target_properties(qt_proj PROPERTIES
+        OUTPUT_NAME "OiseauMonitor"
+        WIN32_EXECUTABLE ON
+        MACOSX_BUNDLE ON
+)
+
 target_precompile_headers(qt_proj PRIVATE pch.h)
 
 add_subdirectory(src_qCustomPlot)

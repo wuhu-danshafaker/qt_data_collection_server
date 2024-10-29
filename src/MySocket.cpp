@@ -97,9 +97,9 @@ void MySocket::deal_delete(){
     tcpSocket->deleteLater();
 }
 
-void MySocket::initRMT(const QString& csvDir, const QString& csvName) {
+void MySocket::initRMT(const QString& csvDir, const QString& subDir, const QString& csvName) {
     rmt = new RecvMsgThread();
-    rmt->initCsv(csvDir, csvName);
+    rmt->initCsv(csvDir, subDir, csvName);
     rmt->resume();
     rmt->start();
 }
@@ -113,13 +113,13 @@ void MySocket::setIpAndPort(QString ipInfo, quint16 portInfo) {
     port = portInfo;
 }
 
-void MySocket::setCsvPath(bool isLeft, const QString& name) {
+void MySocket::setCsvPath(bool isLeft, const QString& name, const QString& trail) {
     QDateTime currentDateTime = QDateTime::currentDateTime();
     QString timeStr = currentDateTime.toString("MMdd-hh_mm_ss");
-    QString foot = (isLeft) ? "left" : "right";
     QString csvDir = QString("../csvData/%1").arg(name);
+    QString foot = (isLeft) ? "left" : "right";
     QString csvName = QString("%1_%2_%3_%4.csv").arg(name, foot, timeStr, ip);
-    initRMT(csvDir, csvName);
+    initRMT(csvDir, trail, csvName);
 }
 
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1494</width>
-    <height>909</height>
+    <width>1373</width>
+    <height>911</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -181,7 +181,7 @@ QTabBar::tab::selected{
 	border-bottom-left-radius:10px;
 }</string>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_5" stretch="3,0,4">
+             <layout class="QVBoxLayout" name="verticalLayout_5" stretch="3,0,0">
               <item>
                <widget class="QWidget" name="controlPanel" native="true">
                 <property name="sizePolicy">
@@ -219,7 +219,7 @@ QTabBar::tab::selected{
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="broadcast">
+                    <widget class="QPushButton" name="reset">
                      <property name="maximumSize">
                       <size>
                        <width>75</width>
@@ -227,7 +227,7 @@ QTabBar::tab::selected{
                       </size>
                      </property>
                      <property name="text">
-                      <string>Broadcast</string>
+                      <string>reset</string>
                      </property>
                     </widget>
                    </item>
@@ -591,12 +591,6 @@ border-left: 0px;
 }</string>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_3">
-                 <property name="topMargin">
-                  <number>15</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>15</number>
-                 </property>
                  <item>
                   <widget class="QSplitter" name="splitter_4">
                    <property name="orientation">
@@ -668,22 +662,6 @@ border-left: 0px;
                   </widget>
                  </item>
                  <item>
-                  <spacer name="verticalSpacer_2">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeType">
-                    <enum>QSizePolicy::Preferred</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>10</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
                   <widget class="QSplitter" name="splitter_5">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
@@ -751,6 +729,42 @@ border-left: 0px;
                   </widget>
                  </item>
                  <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_26">
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="label_6">
+                     <property name="text">
+                      <string>Trail</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="trailComboBox">
+                     <item>
+                      <property name="text">
+                       <string>OMC</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>10MWT</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Test</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
                   <spacer name="verticalSpacer">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
@@ -761,7 +775,7 @@ border-left: 0px;
                    <property name="sizeHint" stdset="0">
                     <size>
                      <width>20</width>
-                     <height>50</height>
+                     <height>30</height>
                     </size>
                    </property>
                   </spacer>
@@ -791,22 +805,6 @@ border-left: 0px;
                     <widget class="QTextEdit" name="pInfo"/>
                    </item>
                   </layout>
-                 </item>
-                 <item>
-                  <spacer name="verticalSpacer_4">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeType">
-                    <enum>QSizePolicy::Preferred</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>10</height>
-                    </size>
-                   </property>
-                  </spacer>
                  </item>
                  <item>
                   <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -852,24 +850,22 @@ border-left: 0px;
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QSplitter" name="splitter_2">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="handleWidth">
-                    <number>50</number>
-                   </property>
-                   <widget class="QPushButton" name="addNewDoc">
-                    <property name="text">
-                     <string>新增档案</string>
-                    </property>
-                   </widget>
-                   <widget class="QPushButton" name="editCurrentDoc">
-                    <property name="text">
-                     <string>调整档案</string>
-                    </property>
-                   </widget>
-                  </widget>
+                  <layout class="QHBoxLayout" name="horizontalLayout_25">
+                   <item>
+                    <widget class="QPushButton" name="addNewDoc">
+                     <property name="text">
+                      <string>新增档案</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="editCurrentDoc">
+                     <property name="text">
+                      <string>调整档案</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                  <item>
                   <spacer name="verticalSpacer_5">
@@ -893,6 +889,18 @@ border-left: 0px;
              </layout>
             </widget>
             <widget class="QWidget" name="columnMid" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>300</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="styleSheet">
               <string notr="true">#columnMid{	
 border-bottom: 1px solid;border-top: 1px solid;
@@ -903,7 +911,7 @@ background-color: rgba(255, 255, 255, 200);
               <item>
                <widget class="QTabWidget" name="tabWidget">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -939,8 +947,8 @@ QTabBar::tab::selected{
                        <widget class="QCustomPlot" name="fsrData_Left" native="true">
                         <property name="minimumSize">
                          <size>
-                          <width>491</width>
-                          <height>261</height>
+                          <width>0</width>
+                          <height>0</height>
                          </size>
                         </property>
                         <property name="styleSheet">
@@ -1022,8 +1030,8 @@ QTabBar::tab::selected{
                        <widget class="QCustomPlot" name="fsrData_Right" native="true">
                         <property name="minimumSize">
                          <size>
-                          <width>491</width>
-                          <height>261</height>
+                          <width>0</width>
+                          <height>0</height>
                          </size>
                         </property>
                         <property name="styleSheet">
@@ -1094,27 +1102,11 @@ QTabBar::tab::selected{
                 </widget>
                </widget>
               </item>
-              <item>
-               <spacer name="horizontalSpacer_6">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Preferred</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
              </layout>
             </widget>
             <widget class="QWidget" name="columnRight" native="true">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -1143,7 +1135,7 @@ QTabBar::tab::selected{
               <item>
                <widget class="QWidget" name="FootPrint" native="true">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -1185,22 +1177,6 @@ border-radius:10px;}</string>
                     <property name="sizeConstraint">
                      <enum>QLayout::SetDefaultConstraint</enum>
                     </property>
-                    <item>
-                     <spacer name="horizontalSpacer">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeType">
-                       <enum>QSizePolicy::Minimum</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
                     <item>
                      <widget class="QCustomPlot" name="FootPrint_Left" native="true">
                       <property name="minimumSize">
@@ -1298,7 +1274,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>5</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="leftFsr_2">
@@ -1332,7 +1308,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>2</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="leftFsr_6">
@@ -1366,7 +1342,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>6</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="leftFsr_8">
@@ -1400,7 +1376,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>8</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="leftFsr_4">
@@ -1434,7 +1410,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>4</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="leftFsr_7">
@@ -1468,7 +1444,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>7</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="leftFsr_3">
@@ -1502,7 +1478,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>3</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="leftFsr_1">
@@ -1545,11 +1521,75 @@ li.checked::marker { content: &quot;\2612&quot;; }
                        <property name="minimumSize">
                         <size>
                          <width>231</width>
-                         <height>131</height>
+                         <height>0</height>
                         </size>
                        </property>
                        <property name="styleSheet">
                         <string notr="true"/>
+                       </property>
+                      </widget>
+                      <widget class="QPushButton" name="pushButton_4">
+                       <property name="geometry">
+                        <rect>
+                         <x>130</x>
+                         <y>160</y>
+                         <width>16</width>
+                         <height>41</height>
+                        </rect>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 170, 0);</string>
+                       </property>
+                       <property name="text">
+                        <string>1</string>
+                       </property>
+                      </widget>
+                      <widget class="QPushButton" name="pushButton_5">
+                       <property name="geometry">
+                        <rect>
+                         <x>70</x>
+                         <y>190</y>
+                         <width>16</width>
+                         <height>41</height>
+                        </rect>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 170, 0);</string>
+                       </property>
+                       <property name="text">
+                        <string>2</string>
+                       </property>
+                      </widget>
+                      <widget class="QPushButton" name="pushButton_6">
+                       <property name="geometry">
+                        <rect>
+                         <x>60</x>
+                         <y>340</y>
+                         <width>41</width>
+                         <height>16</height>
+                        </rect>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 170, 0);</string>
+                       </property>
+                       <property name="text">
+                        <string>3</string>
+                       </property>
+                      </widget>
+                      <widget class="QPushButton" name="pushButton_7">
+                       <property name="geometry">
+                        <rect>
+                         <x>120</x>
+                         <y>480</y>
+                         <width>16</width>
+                         <height>41</height>
+                        </rect>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 170, 0);</string>
+                       </property>
+                       <property name="text">
+                        <string>4</string>
                        </property>
                       </widget>
                       <zorder>LeftFoot</zorder>
@@ -1562,6 +1602,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
                       <zorder>leftFsr_3</zorder>
                       <zorder>leftFsr_1</zorder>
                       <zorder>temp_Left</zorder>
+                      <zorder>pushButton_4</zorder>
+                      <zorder>pushButton_5</zorder>
+                      <zorder>pushButton_6</zorder>
+                      <zorder>pushButton_7</zorder>
                      </widget>
                     </item>
                     <item>
@@ -1654,7 +1698,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>5</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="rightFsr_2">
@@ -1682,7 +1726,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>2</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="rightFsr_6">
@@ -1710,7 +1754,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>6</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="rightFsr_8">
@@ -1738,7 +1782,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>8</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="rightFsr_4">
@@ -1766,7 +1810,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>4</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="rightFsr_7">
@@ -1794,7 +1838,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>7</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="rightFsr_3">
@@ -1822,7 +1866,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <string notr="true"/>
                        </property>
                        <property name="text">
-                        <string/>
+                        <string>3</string>
                        </property>
                       </widget>
                       <widget class="QPushButton" name="rightFsr_1">
@@ -1865,30 +1909,78 @@ li.checked::marker { content: &quot;\2612&quot;; }
                        <property name="minimumSize">
                         <size>
                          <width>231</width>
-                         <height>131</height>
+                         <height>0</height>
                         </size>
                        </property>
                        <property name="styleSheet">
                         <string notr="true"/>
                        </property>
                       </widget>
+                      <widget class="QPushButton" name="pushButton_8">
+                       <property name="geometry">
+                        <rect>
+                         <x>85</x>
+                         <y>160</y>
+                         <width>16</width>
+                         <height>41</height>
+                        </rect>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 170, 0);</string>
+                       </property>
+                       <property name="text">
+                        <string>1</string>
+                       </property>
+                      </widget>
+                      <widget class="QPushButton" name="pushButton_9">
+                       <property name="geometry">
+                        <rect>
+                         <x>145</x>
+                         <y>190</y>
+                         <width>16</width>
+                         <height>41</height>
+                        </rect>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 170, 0);</string>
+                       </property>
+                       <property name="text">
+                        <string>2</string>
+                       </property>
+                      </widget>
+                      <widget class="QPushButton" name="pushButton_10">
+                       <property name="geometry">
+                        <rect>
+                         <x>130</x>
+                         <y>340</y>
+                         <width>41</width>
+                         <height>16</height>
+                        </rect>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 170, 0);</string>
+                       </property>
+                       <property name="text">
+                        <string>3</string>
+                       </property>
+                      </widget>
+                      <widget class="QPushButton" name="pushButton_11">
+                       <property name="geometry">
+                        <rect>
+                         <x>94</x>
+                         <y>480</y>
+                         <width>16</width>
+                         <height>41</height>
+                        </rect>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 170, 0);</string>
+                       </property>
+                       <property name="text">
+                        <string>4</string>
+                       </property>
+                      </widget>
                      </widget>
-                    </item>
-                    <item>
-                     <spacer name="horizontalSpacer_2">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeType">
-                       <enum>QSizePolicy::Minimum</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
                     </item>
                    </layout>
                   </widget>

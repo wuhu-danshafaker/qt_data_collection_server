@@ -85,12 +85,9 @@ void MainWindow::on_tcpBtn_clicked() {
     }
 }
 
-void MainWindow::on_broadcast_clicked() {
-    if (!udpThread) {
-        QMessageBox::critical(this, "Failed", "The UDP thread must be created.");
-        return;
-    }
-    emit udpThread->broadcastInst("Here is esp32s3.");
+void MainWindow::on_reset_clicked() {
+    leftFoot->resetPlot();
+    rightFoot->resetPlot();
 }
 
 void MainWindow::on_recordBtn_clicked() {
@@ -122,8 +119,9 @@ void MainWindow::on_recordBtn_clicked() {
         baseTime = QTime::currentTime();
         updateTimeAndDisplay();
         pTimer->start(800);
-        leftFoot->startDisplay(name, isResume);
-        rightFoot->startDisplay(name, isResume);
+        QString trailType = ui->trailComboBox->currentText();
+        leftFoot->startDisplay(name, trailType, isResume);
+        rightFoot->startDisplay(name, trailType, isResume);
         recording = true;
         on_addServerMessage("pTimer: recording");
     } else{

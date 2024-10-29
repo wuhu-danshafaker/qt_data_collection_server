@@ -45,9 +45,7 @@ void RecvMsgThread::run() {
                 dataOnce.clear();
             }
         }
-//        usleep(1);
         qMutex->unlock();
-//        usleep(1);
     }
 
     exec();
@@ -94,15 +92,33 @@ void RecvMsgThread::writeHeaderToCsv(const QString &filePath, const QStringList 
 }
 
 // 创建数据csv，输入表头
-void RecvMsgThread::initCsv(const QString& csvDir, const QString& csvName) {
+void RecvMsgThread::initCsv(const QString& csvDir, const QString& subDir, const QString& csvName) {
 
-    csvPath = csvDir + "/" + csvName;
+//    csvPath = csvDir + "/" + csvName;
 
     // 如果在这里初始化，会创建多余的子文件夹。
     QDir dir;
-    if(!dir.exists(csvDir)){
-        dir.mkpath(csvDir);
+    QString targetDir;
+    if(subDir=="Test"){
+        targetDir = QString("%1/%2").arg(csvDir, subDir);
+        if(!dir.exists(targetDir)){
+            dir.mkpath(targetDir);
+        }
+    } else{
+        int trailTimes = 1;
+        targetDir = QString("%1/%2_%3").arg(csvDir, subDir, QString::number(trailTimes));
+//        if(!dir.exists(csvDir)){
+//            dir.mkpath(csvDir);
+//        }
+        while(dir.exists(targetDir)){
+            trailTimes++;
+            targetDir = QString("%1/%2_%3").arg(csvDir, subDir, QString::number(trailTimes));
+        }
+        dir.mkpath(targetDir);
     }
+
+
+    csvPath = targetDir + "/" + csvName;
 
     QStringList header;
     header << "timeCounter" << "Vcc";

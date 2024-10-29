@@ -33,10 +33,10 @@ public:
         return index;
     }
     void setSocket(MySocket *sock);
-    void startDisplay(const QString& name, bool isResume = false);
+    void startDisplay(const QString& name, const QString& trail, bool isResume = false);
     void pauseDisplay();
     void setIsLeft(bool flag);
-    void setFsrMap();
+    void setFsrNtcMap();
 
 public slots:
     void updateFootPrint(const MsgData& msg);
@@ -91,6 +91,7 @@ private:
     MySocket *socket;
 
     int fsrMap[8]={0};
+    int ntcMap[4]={0};
 };
 
 

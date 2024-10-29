@@ -17,7 +17,7 @@ public:
 
     static void writeDataToCsv(const QString &filePath, const QStringList &data);
     static void writeHeaderToCsv(const QString &filePath, const QStringList &data);
-    void initCsv(const QString& csvDir, const QString& csvName);
+    void initCsv(const QString& csvDir, const QString& subDir, const QString& csvName);
     void pause(){
         thread_running = false;
     }

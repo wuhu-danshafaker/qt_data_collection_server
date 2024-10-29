@@ -40,7 +40,7 @@ private slots:
     void on_tcpBtn_clicked();
     void on_recordBtn_clicked();
     void on_addNewDoc_clicked();
-    void on_broadcast_clicked();
+    void on_reset_clicked();
     void on_databaseAdd_clicked();
     void on_databaseDelete_clicked();
     void on_databaseConfirm_clicked();
