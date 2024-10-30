@@ -7,7 +7,8 @@ UdpSocket::UdpSocket(QObject *parent) : QObject(parent){
 
 UdpSocket::~UdpSocket(){
     udp_sock->close();
-    delete udp_sock;
+    udp_sock->deleteLater();
+//    delete udp_sock; 手动删除会导致报错
 }
 
 void UdpSocket::createSocket() {
@@ -63,7 +64,7 @@ UdpThread::UdpThread(MyServer *server, QObject *parent) : QThread(parent){
 UdpThread::~UdpThread(){
     this->disconnect();
     udpSocket->disconnect();
-    delete udpSocket;
+    udpSocket->deleteLater();
 }
 
 void UdpThread::run() {

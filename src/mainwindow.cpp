@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowIcon(QIcon("../resources/qt_icon.png"));
     this->setWindowTitle("Oiseau Monitor");
     this->setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-
+    this->setAttribute(Qt::WA_DeleteOnClose);
     m_server = nullptr;
 
     databaseInit();
@@ -68,10 +68,23 @@ void MainWindow::on_tcpBtn_clicked() {
         udpThread->start();
 
     } else {
+        // 解绑socket
+        leftFoot->clearSocket();
+        rightFoot->clearSocket();
+        // 清空combo box
+        if(int numSock = ui->clientComboBox->count()){
+            for(;numSock>0;numSock--){
+                ui->clientComboBox->removeItem(numSock);
+            }
+            ui->clientComboBox->setCurrentIndex(0);
+        }
+
         // 不清空socket连接,直接进行删除，因此removeInfo不会运行，需要手动clear clientComboBox
         udpThread->quit();
+        udpThread->wait();
         delete udpThread;
         udpThread = nullptr;
+        qDebug() << "clear udpThread";
         m_server->close();
         delete m_server;
         m_server = nullptr;
@@ -153,7 +166,7 @@ void MainWindow::AddClientComboBox(const QString& s, qsizetype idx) {
 }
 
 void MainWindow::removeClientComboBox(int num) {
-    ui->clientComboBox->removeItem(num+1);
+    ui->clientComboBox->removeItem(num);
 }
 
 void MainWindow::fsrBtnInit() {

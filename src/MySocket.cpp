@@ -68,23 +68,26 @@ void MySocket::deal_write(const QByteArray& arr){
 }
 
 void MySocket::deal_disconnect(){
-    qDebug() << "socket disconnected:";
     auto *tcpSocket = dynamic_cast<MySocket *>(sender());
-    //断开socket
-    tcpSocket->abort();
-    //消息提示断开
+    if (tcpSocket==this){
+        qDebug() << "socket disconnected:";
+        //断开socket
+        tcpSocket->abort();
+        //消息提示断开
 
-    QString message = QString("[%1:%2] 已断开").arg(ip).arg(port);
-    qDebug() << message;
-    //发送到UI线程显示
-    emit addMsg(message);
-    //断开所有信号连接
-    //tcpSocket->disconnect();
-    //发送到UI线程移除信息
-    qDebug() << "socket remove:" << tcpSocket;
-    emit socketHelper->removeList(tcpSocket);
-    //释放
-    tcpSocket->deleteLater();
+        QString message = QString("[%1:%2] 已断开").arg(ip).arg(port);
+        qDebug() << message;
+        //发送到UI线程显示
+        emit addMsg(message);
+        //断开所有信号连接
+        //tcpSocket->disconnect();
+        //发送到UI线程移除信息
+        qDebug() << "socket remove:" << tcpSocket;
+        emit socketHelper->removeList(tcpSocket);
+
+        //释放 手动删除会导致程序崩溃
+        //tcpSocket->deleteLater();
+    }
 }
 
 void MySocket::deal_delete(){

@@ -12,9 +12,10 @@ void FSRDisplay::updateFootPrint(const MsgData& msg) {
     }
 
     QVector<double> temp;
-    for(double i : msg.ntc){
-        temp << i;
+    for(int i : ntcMap){
+        temp<<msg.ntc[i];
     }
+
     tempBar->setData({1,2,3,4},temp);
     for(int i=0;i<9;i++){
         ImuGraphs[i]->addData(msg.timeCounter, msg.imuAGE[i]);
@@ -26,6 +27,7 @@ void FSRDisplay::updateFootPrint(const MsgData& msg) {
     // 原本借助 data counter 降低刷新频率，如今看来疑似没有必要
     fsrFootPrint->replot(QCustomPlot::rpQueuedReplot);
     fsrPlot->xAxis->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
+    fsrPlot->yAxis->rescale();
     fsrPlot->replot(QCustomPlot::rpQueuedReplot);
     for(int i=0;i<3;i++){
         imuPlot->axisRect(i)->axis(QCPAxis::atBottom)->setRange((msg.timeCounter > 200) ? msg.timeCounter : 200, 200, Qt::AlignRight);
@@ -52,9 +54,10 @@ void FSRDisplay::setupPlot() {
     QCPAxisRect *axisRect = fsrFootPrint->axisRect();
     axisRect->setAutoMargins(QCP::msNone);
     axisRect->setMargins(QMargins(0, 0, 0, 0));
+    fsrFootPrint->xAxis->setVisible(false);
+    fsrFootPrint->yAxis->setVisible(false);
 
     //dynamic
-    fsrPlot->yAxis->setRange(0, 150);
     fsrPlot->legend->setVisible(true);
 
 //    fsrFootPrint->addGraph();
@@ -83,10 +86,9 @@ void FSRDisplay::setupPlot() {
         fsrPlot->legend->item(i)->setVisible(true);
     }
 
-//    qDebug() << "setfsr";
     fsrPlot->xAxis->setRange(200, 200, Qt::AlignRight);
     fsrPlot->yAxis->setRange(0, 50);
-//    FsrGraphs[0]->setVisible(true);
+
     auto *fsrLegendLayout = new QCPLayoutGrid;
     fsrPlot->plotLayout()->addElement(0, 1, fsrLegendLayout);
     fsrLegendLayout->setMargins(QMargins(0, 5, 5, 50));
@@ -137,7 +139,7 @@ void FSRDisplay::setupPlot() {
     tempPlot->xAxis->setSubTicks(false);
     tempPlot->yAxis->setSubTicks(false);
     tempPlot->xAxis->setRange(0, 5);
-    tempPlot->yAxis->setRange(0, 50);
+    tempPlot->yAxis->setRange(20, 50);
 }
 
 void FSRDisplay::setDynamicUI(QCustomPlot *pcustom) {
@@ -172,6 +174,10 @@ void FSRDisplay::setIdx(qsizetype idx) {
 
 void FSRDisplay::setSocket(MySocket *sock) {
     socket = sock;
+}
+
+void FSRDisplay::clearSocket() {
+    socket = nullptr;
 }
 
 void FSRDisplay::startDisplay(const QString& name, const QString& trail, bool isResume) {
@@ -252,6 +258,12 @@ void FSRDisplay::resetPlot() {
     }
     //ntc
     tempBar->data().data()->clear();
+    fsrPlot->xAxis->setRange(200, 200, Qt::AlignRight);
+    fsrPlot->yAxis->setRange(0, 50);
+    for(int i=0;i<3;i++){
+        imuPlot->axisRect(i)->axis(QCPAxis::atBottom)->setRange(200, 200, Qt::AlignRight);
+        imuPlot->axisRect(i)->axis(QCPAxis::atLeft)->setRange(-1,12);
+    }
     fsrPlot->replot(QCustomPlot::rpQueuedReplot);
     imuPlot->replot(QCustomPlot::rpQueuedReplot);
     tempPlot->replot(QCustomPlot::rpQueuedReplot);

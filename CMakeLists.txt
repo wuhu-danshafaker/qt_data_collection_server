@@ -47,7 +47,7 @@ add_executable(qt_proj main.cpp
 
 set_target_properties(qt_proj PROPERTIES
         OUTPUT_NAME "OiseauMonitor"
-        WIN32_EXECUTABLE ON
+#        WIN32_EXECUTABLE ON #  ON会使得无法qDebug
         MACOSX_BUNDLE ON
 )
 
