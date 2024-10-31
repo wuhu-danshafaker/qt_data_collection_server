@@ -49,6 +49,7 @@ void MySocket::deal_readyRead(){
         MsgData tmp_data;
         tmp_data.byteInput(msg_slice);
         if(ip==tmp_data.ipByte2Str()){
+            tmp_data.setLeft(isLeft);
             rmt->qMutex->lock();
             rmt->msgQueue->enqueue(tmp_data);  // 在这里修改成一个函数
             rmt->qMutex->unlock();
@@ -124,6 +125,16 @@ void MySocket::setCsvPath(bool isLeft, const QString& name, const QString& trail
     QString foot = (isLeft) ? "left" : "right";
     QString csvName = QString("%1_%2_%3_%4.csv").arg(name, foot, timeStr, ip);
     initRMT(csvDir, trail, csvName);
+}
+
+void MySocket::setLeft(bool flag) {
+    isLeft = flag;
+
+    if(!rmt){
+        qDebug() << "null rmt?!";
+        return;
+    }
+    rmt->setLeft(flag);
 }
 
 

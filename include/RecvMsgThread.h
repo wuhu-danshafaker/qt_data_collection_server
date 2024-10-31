@@ -25,12 +25,14 @@ public:
     void resume(){
         thread_running = true;
     }
+    void setLeft(bool flag);
 
     QQueue<MsgData> *msgQueue;
     QMutex *qMutex;
 
 private:
     bool thread_running;
+    bool isLeft;
     QString csvPath;
 
 signals:

@@ -2,18 +2,18 @@
 
 void FSRDisplay::updateFootPrint(const MsgData& msg) {
     for(int i=0;i<8;i++){
-        qreal ratio = std::min(msg.fsr[fsrMap[i]]/20.0, 1.0);  // 3000!
+        qreal ratio = std::min(msg.fsr[i]/20.0, 1.0);  // 3000!
         colors[i] = interpolate(Qt::red, QColor(85, 170, 127), ratio);
         circles[i]->setBrush(QBrush(colors[i]));
-        fsrPlot->graph(i)->addData(msg.timeCounter, msg.fsr[fsrMap[i]]);
+        fsrPlot->graph(i)->addData(msg.timeCounter, msg.fsr[i]);
         if(msg.timeCounter>500){
             fsrPlot->graph(i)->data()->removeBefore(200);
         }
     }
 
     QVector<double> temp;
-    for(int i : ntcMap){
-        temp<<msg.ntc[i];
+    for(double t : msg.ntc){
+        temp << t;
     }
 
     tempBar->setData({1,2,3,4},temp);
@@ -174,6 +174,7 @@ void FSRDisplay::setIdx(qsizetype idx) {
 
 void FSRDisplay::setSocket(MySocket *sock) {
     socket = sock;
+    socket->setLeft(isLeft);
 }
 
 void FSRDisplay::clearSocket() {
@@ -208,42 +209,43 @@ void FSRDisplay::pauseDisplay() {
     // 断了以后要重新连接，然而在此之前居然已经删掉了socket的连接，这是因为stop之后esp端主动切断此连接了。
 }
 
-void FSRDisplay::setFsrNtcMap() {
-    if (isLeft){
-        fsrMap[0]=3;
-        fsrMap[1]=4;
-        fsrMap[2]=2;
-        fsrMap[3]=0;
-        fsrMap[4]=1;
-        fsrMap[5]=7;
-        fsrMap[6]=5;
-        fsrMap[7]=6;
-
-        ntcMap[0]=2;
-        ntcMap[1]=1;
-        ntcMap[2]=3;
-        ntcMap[3]=0;
-    } else{
-        // wait for change
-        fsrMap[0]=1;
-        fsrMap[1]=0;
-        fsrMap[2]=2;
-        fsrMap[3]=3;
-        fsrMap[4]=4;
-        fsrMap[5]=5;
-        fsrMap[6]=7;
-        fsrMap[7]=6;
-
-        ntcMap[0]=3;
-        ntcMap[1]=2;
-        ntcMap[2]=1;
-        ntcMap[3]=0;
-    }
-}
+//void FSRDisplay::setFsrNtcMap() {
+//    //移到msgData中
+//    if (isLeft){
+//        fsrMap[0]=3;
+//        fsrMap[1]=4;
+//        fsrMap[2]=2;
+//        fsrMap[3]=0;
+//        fsrMap[4]=1;
+//        fsrMap[5]=7;
+//        fsrMap[6]=5;
+//        fsrMap[7]=6;
+//
+//        ntcMap[0]=2;
+//        ntcMap[1]=1;
+//        ntcMap[2]=3;
+//        ntcMap[3]=0;
+//    } else{
+//        // wait for change
+//        fsrMap[0]=1;
+//        fsrMap[1]=0;
+//        fsrMap[2]=2;
+//        fsrMap[3]=3;
+//        fsrMap[4]=4;
+//        fsrMap[5]=5;
+//        fsrMap[6]=7;
+//        fsrMap[7]=6;
+//
+//        ntcMap[0]=3;
+//        ntcMap[1]=2;
+//        ntcMap[2]=1;
+//        ntcMap[3]=0;
+//    }
+//}
 
 void FSRDisplay::setIsLeft(bool flag) {
     isLeft = flag;
-    setFsrNtcMap();
+//    setFsrNtcMap();
 }
 
 void FSRDisplay::resetPlot() {

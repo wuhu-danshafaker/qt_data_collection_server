@@ -38,7 +38,7 @@ public:
     void startDisplay(const QString& name, const QString& trail, bool isResume = false);
     void pauseDisplay();
     void setIsLeft(bool flag);
-    void setFsrNtcMap();
+//    void setFsrNtcMap();
 
 public slots:
     void updateFootPrint(const MsgData& msg);
@@ -91,8 +91,8 @@ private:
     qsizetype index;
     MySocket *socket;
 
-    int fsrMap[8]={0};
-    int ntcMap[4]={0};
+//    int fsrMap[8]={0};
+//    int ntcMap[4]={0};
 };
 
 

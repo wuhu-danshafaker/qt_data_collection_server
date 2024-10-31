@@ -32,10 +32,22 @@ bool MsgData::MsgByteExplain() {
                 vcc = adc_vol[i]/1000.0 * 2.0;
             }
             else if(i<9){
-                fsr[i-1] = fsrVol2F(adc_vol[i], vcc);
+                int idx;
+                if(isLeft){
+                    idx = fsrMapL[i-1];
+                } else{
+                    idx = fsrMapR[i-1];
+                }
+                fsr[idx] = fsrVol2F(adc_vol[i]/1000.0, vcc, fsrFactor[i-1]);
             }
             else{
-                ntc[i-9] = ntcVol2T(adc_vol[i], vcc);
+                int idx;
+                if(isLeft){
+                    idx = ntcMapL[i-1];
+                } else{
+                    idx = ntcMapR[i-1];
+                }
+                ntc[idx] = ntcVol2T(adc_vol[i], vcc);
             }
         }
 
@@ -67,15 +79,8 @@ double MsgData::qbyte2double(QByteArray src) {
     return *((double *)arr);
 }
 
-double MsgData::fsrVol2F(int vol, double vcc_real) {
-    // vol: mV
-    double x;
-    if(vcc_real>0){
-        x = (double)vol/1000.0 * 5.0/vcc_real;
-    } else{
-        x = (double)vol/1000.0;
-    }
-    return 14.298*x*x + 10.058*x;
+double MsgData::fsrVol2F(double vol, double vcc_real, double factor) {
+    return vol/vcc_real*factor;
 }
 
 double MsgData::ntcVol2T(int vol, double vcc_real) {
@@ -85,9 +90,9 @@ double MsgData::ntcVol2T(int vol, double vcc_real) {
     return (3795.9 - vol*5/4.98)/51 ;
 }
 
-QByteArray MsgData::imuArr() {
-    return byteMsg.mid(32, 72).toHex();
-}
+//QByteArray MsgData::imuArr() {
+//    return byteMsg.mid(32, 72).toHex();
+//}
 
 QString MsgData::ipByte2Str(const QByteArray& src) {
     QByteArray src_data = src;
@@ -99,6 +104,10 @@ QString MsgData::ipByte2Str(const QByteArray& src) {
     int ip3 = static_cast<byte>(src_data.at(2));
     int ip4 = static_cast<byte>(src_data.at(3));
     return QString("%1.%2.%3.%4").arg(ip1).arg(ip2).arg(ip3).arg(ip4);
+}
+
+void MsgData::setLeft(bool flag) {
+    isLeft=flag;
 }
 
 //QQueue<MsgData> Msg_queue;

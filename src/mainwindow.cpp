@@ -73,7 +73,7 @@ void MainWindow::on_tcpBtn_clicked() {
         leftFoot->clearSocket();
         rightFoot->clearSocket();
         ui->LeftIs->clear();
-        ui->LeftIs->clear();
+        ui->RightIs->clear();
         // 清空combo box
         while (ui->clientComboBox->count()>0) {
             ui->clientComboBox->removeItem(0);

@@ -136,3 +136,7 @@ void RecvMsgThread::initCsv(const QString& csvDir, const QString& subDir, const 
     writeHeaderToCsv(csvPath, header);
 }
 
+void RecvMsgThread::setLeft(bool flag) {
+    isLeft = flag;
+}
+

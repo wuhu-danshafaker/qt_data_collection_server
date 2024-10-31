@@ -29,6 +29,7 @@ public:
     void stopRMT();
 
     void setCsvPath(bool isLeft, const QString& name, const QString& trail);
+    void setLeft(bool flag);
 private:
     RecvMsgThread *rmt;
     QString ip;
@@ -36,6 +37,7 @@ private:
 
     QByteArray msg_last = "";
 
+    bool isLeft;
 public slots:
     void deal_readyRead();
     void deal_disconnect();
