@@ -23,6 +23,7 @@ MyServer::~MyServer(){
         emit list_information[0].getSocket()->deleteSocket();
         list_information.removeAt(0);
     }
+
     while(list_thread.count()>0){
         list_thread[0]->quit();
         list_thread[0]->wait();

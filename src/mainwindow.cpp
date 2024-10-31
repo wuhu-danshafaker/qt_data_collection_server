@@ -50,6 +50,7 @@ MainWindow::~MainWindow() {
     delete rightFoot;
     delete leftFoot;
     udpThread->quit();
+    udpThread->wait();
     delete udpThread;
 }
 
@@ -71,12 +72,11 @@ void MainWindow::on_tcpBtn_clicked() {
         // 解绑socket
         leftFoot->clearSocket();
         rightFoot->clearSocket();
+        ui->LeftIs->clear();
+        ui->LeftIs->clear();
         // 清空combo box
-        if(int numSock = ui->clientComboBox->count()){
-            for(;numSock>0;numSock--){
-                ui->clientComboBox->removeItem(numSock);
-            }
-            ui->clientComboBox->setCurrentIndex(0);
+        while (ui->clientComboBox->count()>0) {
+            ui->clientComboBox->removeItem(0);
         }
 
         // 不清空socket连接,直接进行删除，因此removeInfo不会运行，需要手动clear clientComboBox
@@ -84,16 +84,17 @@ void MainWindow::on_tcpBtn_clicked() {
         udpThread->wait();
         delete udpThread;
         udpThread = nullptr;
-        qDebug() << "clear udpThread";
         m_server->close();
         delete m_server;
         m_server = nullptr;
 
         ui->tcpMsg->append("停止监听……");
         ui->tcpBtn->setText("Connect");
-        ui->clientComboBox->clear();
 
-        pTimer->stop();
+        if(pTimer){
+            pTimer->stop();
+        }
+
         tcpConnected = false;
     }
 }
@@ -166,6 +167,13 @@ void MainWindow::AddClientComboBox(const QString& s, qsizetype idx) {
 }
 
 void MainWindow::removeClientComboBox(int num) {
+    QString ipStr = ui->clientComboBox->itemText(num);
+    if(ui->LeftIs->text() == ipStr){
+        ui->LeftIs->clear();
+    }
+    if(ui->RightIs->text() == ipStr){
+        ui->RightIs->clear();
+    }
     ui->clientComboBox->removeItem(num);
 }
 
@@ -226,7 +234,6 @@ void MainWindow::setAsBtnClicked() {
         qDebug() << espIp;
         QString str = QString("%1%2").arg(btn->property("type").toString(), "Is");
         auto idx = var.value<qsizetype>();
-        qDebug() << idx;
         if(str=="LeftIs"){
             auto *espIs = ui->LeftIs;
             espIs->setText(espIp);

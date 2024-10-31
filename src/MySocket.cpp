@@ -5,6 +5,7 @@
 #include "MySocket.h"
 
 MySocket::MySocket(QObject *parent) : m_tcpServer(dynamic_cast<MyServer*>(parent)){
+    qDebug()<<"create socket";
     rmt = nullptr;
 }
 
@@ -86,7 +87,7 @@ void MySocket::deal_disconnect(){
         emit socketHelper->removeList(tcpSocket);
 
         //释放 手动删除会导致程序崩溃
-        //tcpSocket->deleteLater();
+//        tcpSocket->deleteLater();
     }
 }
 
@@ -97,7 +98,7 @@ void MySocket::deal_delete(){
     //断开所有信号连接
     tcpSocket->disconnect();
     //释放
-    tcpSocket->deleteLater();
+//    tcpSocket->deleteLater();
 }
 
 void MySocket::initRMT(const QString& csvDir, const QString& subDir, const QString& csvName) {

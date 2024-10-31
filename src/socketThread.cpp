@@ -16,7 +16,6 @@ socketThread::socketThread(QObject *parent){
 
 socketThread::~socketThread() {
     if(this->socketHelper != nullptr){
-        qDebug() << "socketThread disconnecting";
         socketHelper->disconnect();
         socketHelper->deleteLater();
     }
