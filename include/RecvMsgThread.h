@@ -17,7 +17,7 @@ public:
 
     static void writeDataToCsv(const QString &filePath, const QStringList &data);
     static void writeHeaderToCsv(const QString &filePath, const QStringList &data);
-    void initCsv(const QString& csvDir, const QString& subDir, const QString& csvName);
+    void initCsv(const QString& saveDir, const QString& csvName);
     void pause(){
         thread_running = false;
     }
@@ -25,14 +25,12 @@ public:
     void resume(){
         thread_running = true;
     }
-    void setLeft(bool flag);
 
     QQueue<MsgData> *msgQueue;
     QMutex *qMutex;
 
 private:
     bool thread_running;
-    bool isLeft;
     QString csvPath;
 
 signals:

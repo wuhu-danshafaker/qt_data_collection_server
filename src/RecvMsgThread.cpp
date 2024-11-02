@@ -19,7 +19,6 @@ RecvMsgThread::~RecvMsgThread() {
 void RecvMsgThread::run() {
     MsgData tmpData;
     QStringList dataOnce;
-    qDebug() << "subThread msg: " << QThread::currentThreadId();
 
     while(thread_running){
         qMutex->lock();
@@ -73,6 +72,7 @@ void RecvMsgThread::writeDataToCsv(const QString &filePath, const QStringList &d
 
 void RecvMsgThread::writeHeaderToCsv(const QString &filePath, const QStringList &data) {
     QFile file(filePath);
+    qDebug() << filePath;
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)){
         qDebug() << "Failed to open file for writing." << file.errorString();
         return;
@@ -92,33 +92,15 @@ void RecvMsgThread::writeHeaderToCsv(const QString &filePath, const QStringList 
 }
 
 // 创建数据csv，输入表头
-void RecvMsgThread::initCsv(const QString& csvDir, const QString& subDir, const QString& csvName) {
+void RecvMsgThread::initCsv(const QString& saveDir, const QString& csvName) {
 
-//    csvPath = csvDir + "/" + csvName;
+    csvPath = saveDir + "/" + csvName;
 
     // 如果在这里初始化，会创建多余的子文件夹。
     QDir dir;
-    QString targetDir;
-    if(subDir=="Test"){
-        targetDir = QString("%1/%2").arg(csvDir, subDir);
-        if(!dir.exists(targetDir)){
-            dir.mkpath(targetDir);
-        }
-    } else{
-        int trailTimes = 1;
-        targetDir = QString("%1/%2_%3").arg(csvDir, subDir, QString::number(trailTimes));
-//        if(!dir.exists(csvDir)){
-//            dir.mkpath(csvDir);
-//        }
-        while(dir.exists(targetDir)){
-            trailTimes++;
-            targetDir = QString("%1/%2_%3").arg(csvDir, subDir, QString::number(trailTimes));
-        }
-        dir.mkpath(targetDir);
+    if(!dir.exists(saveDir)){
+        dir.mkpath(saveDir);
     }
-
-
-    csvPath = targetDir + "/" + csvName;
 
     QStringList header;
     header << "timeCounter" << "Vcc";
@@ -135,8 +117,3 @@ void RecvMsgThread::initCsv(const QString& csvDir, const QString& subDir, const 
     header << "IP";
     writeHeaderToCsv(csvPath, header);
 }
-
-void RecvMsgThread::setLeft(bool flag) {
-    isLeft = flag;
-}
-

@@ -9,10 +9,10 @@
 class MsgData{
 public:
     MsgData();
+    MsgData(bool side, QByteArray& msg);
     bool MsgByteExplain();
-    void byteInput(QByteArray msg);
+    void byteInput(QByteArray& msg);
     QString ipByte2Str(const QByteArray& src="");
-    void setLeft(bool flag);
     int adc_vol[13];
     double fsr[8];
     double ntc[4];

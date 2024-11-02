@@ -35,7 +35,7 @@ public:
     }
     void setSocket(MySocket *sock);
     void clearSocket();
-    void startDisplay(const QString& name, const QString& trail, bool isResume = false);
+    void startDisplay(const QString& name, const QString& saveDir, bool isResume = false);
     void pauseDisplay();
     void setIsLeft(bool flag);
 //    void setFsrNtcMap();
@@ -80,7 +80,6 @@ private:
     };
 
     QCustomPlot *fsrPlot;
-//    QCPGraph *FsrGraphs[8]; fsrPlot->graph(i);
 
     QCustomPlot *imuPlot;
     QCPGraph *ImuGraphs[9];
@@ -91,8 +90,6 @@ private:
     qsizetype index;
     MySocket *socket;
 
-//    int fsrMap[8]={0};
-//    int ntcMap[4]={0};
 };
 
 

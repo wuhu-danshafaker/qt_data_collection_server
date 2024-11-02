@@ -99,6 +99,27 @@ void MainWindow::on_tcpBtn_clicked() {
     }
 }
 
+QString MainWindow::setSaveDir(QString& name, QString& trialType) {
+    QDir dir;
+    QString targetDir;
+    QString csvDir = QString("../csvData/%1").arg(name);
+    if(trialType=="Test"){
+        targetDir = QString("%1/%2").arg(csvDir, trialType);
+        if(!dir.exists(targetDir)){
+            dir.mkpath(targetDir);
+        }
+    } else{
+        int trialTimes = 1;
+        targetDir = QString("%1/%2_%3").arg(csvDir, trialType, QString::number(trialTimes));
+        while(dir.exists(targetDir)){
+            trialTimes++;
+            targetDir = QString("%1/%2_%3").arg(csvDir, trialType, QString::number(trialTimes));
+        }
+        dir.mkpath(targetDir);
+    }
+    return targetDir;
+}
+
 void MainWindow::on_reset_clicked() {
     leftFoot->resetPlot();
     rightFoot->resetPlot();
@@ -133,9 +154,10 @@ void MainWindow::on_recordBtn_clicked() {
         baseTime = QTime::currentTime();
         updateTimeAndDisplay();
         pTimer->start(800);
-        QString trailType = ui->trailComboBox->currentText();
-        leftFoot->startDisplay(name, trailType, isResume);
-        rightFoot->startDisplay(name, trailType, isResume);
+        QString trialType = ui->trialComboBox->currentText();
+        QString saveDir = setSaveDir(name, trialType);
+        leftFoot->startDisplay(name, saveDir, isResume);
+        rightFoot->startDisplay(name, saveDir, isResume);
         recording = true;
         on_addServerMessage("pTimer: recording");
     } else{

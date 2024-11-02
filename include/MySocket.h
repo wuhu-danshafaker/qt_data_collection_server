@@ -25,10 +25,10 @@ public:
 
     void setIpAndPort(QString ipInfo, quint16 portInfo);
 
-    void initRMT(const QString& csvDir, const QString& subDir, const QString& csvName);
+    void initRMT(const QString& saveDir, const QString& csvName);
     void stopRMT();
 
-    void setCsvPath(bool isLeft, const QString& name, const QString& trail);
+    void setCsvPath(bool isLeft, const QString& name, const QString& saveDir);
     void setLeft(bool flag);
 private:
     RecvMsgThread *rmt;

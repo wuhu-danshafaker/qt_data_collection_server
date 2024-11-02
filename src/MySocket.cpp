@@ -5,8 +5,8 @@
 #include "MySocket.h"
 
 MySocket::MySocket(QObject *parent) : m_tcpServer(dynamic_cast<MyServer*>(parent)){
-    qDebug()<<"create socket";
     rmt = nullptr;
+    msg_last = "";
 }
 
 MySocket::~MySocket(){
@@ -19,17 +19,16 @@ MySocket::~MySocket(){
 
 void MySocket::deal_readyRead(){
     auto* tcpSocket = dynamic_cast<MySocket*>(sender());
-
+    qDebug() << "reading";
     //获取客户端发来的数据
     QByteArray msg;
-    msg_last = "";
     QByteArray header = "\x5A\x55";
-//    tcpSocket->read();
+
     msg = msg_last.append(tcpSocket->readAll());
     int msg_length = msg.size();
     int idx_header = 0;
     msg_last.clear();
-    // header 2byte; time stamp 4byte; adc 2+24byte; imu 72yte; total 104byte
+    // header 2byte; time stamp 4byte; adc 2+24byte; imu 72yte, ip 4byte; total 108byte
     while(true){
         idx_header = msg.indexOf(header, idx_header);
         if(idx_header == -1){
@@ -46,10 +45,8 @@ void MySocket::deal_readyRead(){
         }
         // 正常处理数据
         QByteArray msg_slice = msg.mid(idx_header, BYTE_LENGTH);
-        MsgData tmp_data;
-        tmp_data.byteInput(msg_slice);
+        MsgData tmp_data(isLeft, msg_slice);
         if(ip==tmp_data.ipByte2Str()){
-            tmp_data.setLeft(isLeft);
             rmt->qMutex->lock();
             rmt->msgQueue->enqueue(tmp_data);  // 在这里修改成一个函数
             rmt->qMutex->unlock();
@@ -60,7 +57,7 @@ void MySocket::deal_readyRead(){
         idx_header++;
     }
     if (msg.size()<BYTE_LENGTH){
-        qDebug() << "initial message";
+        qDebug() << "what msg? " << msg;
         emit addMsg(QString::fromLocal8Bit(msg));
     }
 }
@@ -102,9 +99,9 @@ void MySocket::deal_delete(){
 //    tcpSocket->deleteLater();
 }
 
-void MySocket::initRMT(const QString& csvDir, const QString& subDir, const QString& csvName) {
+void MySocket::initRMT(const QString& saveDir, const QString& csvName) {
     rmt = new RecvMsgThread();
-    rmt->initCsv(csvDir, subDir, csvName);
+    rmt->initCsv(saveDir, csvName);
     rmt->resume();
     rmt->start();
 }
@@ -118,23 +115,16 @@ void MySocket::setIpAndPort(QString ipInfo, quint16 portInfo) {
     port = portInfo;
 }
 
-void MySocket::setCsvPath(bool isLeft, const QString& name, const QString& trail) {
+void MySocket::setCsvPath(bool is_Left, const QString& name, const QString& saveDir) {
     QDateTime currentDateTime = QDateTime::currentDateTime();
-    QString timeStr = currentDateTime.toString("MMdd-hh_mm_ss");
-    QString csvDir = QString("../csvData/%1").arg(name);
-    QString foot = (isLeft) ? "left" : "right";
+    QString timeStr = currentDateTime.toString("MMdd-hh-mm-ss");
+    QString foot = (is_Left) ? "left" : "right";
     QString csvName = QString("%1_%2_%3_%4.csv").arg(name, foot, timeStr, ip);
-    initRMT(csvDir, trail, csvName);
+    initRMT(saveDir, csvName);
 }
 
 void MySocket::setLeft(bool flag) {
     isLeft = flag;
-
-    if(!rmt){
-        qDebug() << "null rmt?!";
-        return;
-    }
-    rmt->setLeft(flag);
 }
 
 

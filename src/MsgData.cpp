@@ -8,8 +8,16 @@ MsgData::MsgData() {
     vcc = 0;
 }
 
-void MsgData::byteInput(QByteArray msg) {
-    byteMsg = std::move(msg);
+MsgData::MsgData(bool side, QByteArray& msg) {
+    isLeft = side;
+    byteInput(msg);
+
+    isEmpty = true;
+    vcc = 0;
+}
+
+void MsgData::byteInput(QByteArray& msg) {
+    byteMsg = msg;
     if (!byteMsg.isEmpty()){
         isEmpty = false;
     }
@@ -43,9 +51,9 @@ bool MsgData::MsgByteExplain() {
             else{
                 int idx;
                 if(isLeft){
-                    idx = ntcMapL[i-1];
+                    idx = ntcMapL[i-9];
                 } else{
-                    idx = ntcMapR[i-1];
+                    idx = ntcMapR[i-9];
                 }
                 ntc[idx] = ntcVol2T(adc_vol[i], vcc);
             }
@@ -106,9 +114,7 @@ QString MsgData::ipByte2Str(const QByteArray& src) {
     return QString("%1.%2.%3.%4").arg(ip1).arg(ip2).arg(ip3).arg(ip4);
 }
 
-void MsgData::setLeft(bool flag) {
-    isLeft=flag;
-}
+
 
 //QQueue<MsgData> Msg_queue;
 //QMutex mutexMsg;

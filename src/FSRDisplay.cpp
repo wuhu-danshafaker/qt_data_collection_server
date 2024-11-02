@@ -152,8 +152,7 @@ void FSRDisplay::showFsr(int i) {
        qDebug() << "Subgraph index exceeded range";
        return;
     }
-//    bool vis = FsrGraphs[i]->visible();
-//    FsrGraphs[i]->setVisible(!vis);
+
     bool vis = fsrPlot->graph(i)->visible();
     fsrPlot->graph(i)->setVisible(!vis);
     fsrPlot->legend->item(i)->setVisible(!vis);
@@ -181,13 +180,13 @@ void FSRDisplay::clearSocket() {
     socket = nullptr;
 }
 
-void FSRDisplay::startDisplay(const QString& name, const QString& trail, bool isResume) {
+void FSRDisplay::startDisplay(const QString& name, const QString& saveDir, bool isResume) {
     if(!socket){
         QString lor = (isLeft) ? "left" : "right";
         qDebug() << lor + " 尚未绑定socket!";
         return;
     }
-    socket->setCsvPath(isLeft, name, trail);
+    socket->setCsvPath(isLeft, name, saveDir);
     RecvMsgThread *rmtForClient = socket->getRMT();
     connect(rmtForClient, &RecvMsgThread::resultReady, this, &FSRDisplay::updateFootPrint);
     rmtForClient->resume();
@@ -209,43 +208,8 @@ void FSRDisplay::pauseDisplay() {
     // 断了以后要重新连接，然而在此之前居然已经删掉了socket的连接，这是因为stop之后esp端主动切断此连接了。
 }
 
-//void FSRDisplay::setFsrNtcMap() {
-//    //移到msgData中
-//    if (isLeft){
-//        fsrMap[0]=3;
-//        fsrMap[1]=4;
-//        fsrMap[2]=2;
-//        fsrMap[3]=0;
-//        fsrMap[4]=1;
-//        fsrMap[5]=7;
-//        fsrMap[6]=5;
-//        fsrMap[7]=6;
-//
-//        ntcMap[0]=2;
-//        ntcMap[1]=1;
-//        ntcMap[2]=3;
-//        ntcMap[3]=0;
-//    } else{
-//        // wait for change
-//        fsrMap[0]=1;
-//        fsrMap[1]=0;
-//        fsrMap[2]=2;
-//        fsrMap[3]=3;
-//        fsrMap[4]=4;
-//        fsrMap[5]=5;
-//        fsrMap[6]=7;
-//        fsrMap[7]=6;
-//
-//        ntcMap[0]=3;
-//        ntcMap[1]=2;
-//        ntcMap[2]=1;
-//        ntcMap[3]=0;
-//    }
-//}
-
 void FSRDisplay::setIsLeft(bool flag) {
     isLeft = flag;
-//    setFsrNtcMap();
 }
 
 void FSRDisplay::resetPlot() {

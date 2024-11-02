@@ -83,6 +83,7 @@ private:
     void fsrBtnInit();
     void setAsBtnInit();
     void displayInit();
+    static QString setSaveDir(QString& name, QString& trialType);
 public slots:
     void on_addServerMessage(const QString& message);
 };
