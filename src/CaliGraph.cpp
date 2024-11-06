@@ -101,7 +101,18 @@ void CaliGraph::updatePlot(const MsgData &msg) {
     magXZ->graph(0)->addData(magX, magZ);
     magYZ->graph(0)->addData(magY, magZ);
     magXY->graph(0)->addData(magX, magY);
-
+    if(abs(magX) > 75 || abs(magZ) > 75){
+        magXZ->xAxis->rescale(true);
+        magXZ->yAxis->rescale(true);
+    }
+    if(abs(magY) > 75 || abs(magZ) > 75) {
+        magYZ->xAxis->rescale(true);
+        magYZ->yAxis->rescale(true);
+    }
+    if(abs(magX) > 75 || abs(magY) > 75) {
+        magXY->xAxis->rescale(true);
+        magXY->yAxis->rescale(true);
+    }
     Acc->replot(QCustomPlot::rpQueuedReplot);
     Gyro->replot(QCustomPlot::rpQueuedReplot);
     Euler->replot(QCustomPlot::rpQueuedReplot);

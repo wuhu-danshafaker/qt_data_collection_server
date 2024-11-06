@@ -18,7 +18,7 @@ public:
 
     void sendData(QString data);
     void setTargetInfo(QString ip, quint16 port);
-    static QString getIp();
+    static QHostAddress getIp();
 
 signals:
     void recvDataSignal(QByteArray data);

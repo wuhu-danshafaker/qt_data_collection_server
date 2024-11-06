@@ -118,17 +118,21 @@ void MySocket::setIpAndPort(QString ipInfo, quint16 portInfo) {
 void MySocket::setCsvPath(bool is_Left, const QString& name, const QString& saveDir) {
     QDateTime currentDateTime = QDateTime::currentDateTime();
     QString timeStr = currentDateTime.toString("MMdd-hh-mm-ss");
+    QString dateStr = currentDateTime.toString("MMdd");
+    QString csvDir = saveDir + "/" + dateStr;
     QString foot = (is_Left) ? "left" : "right";
     QString csvName = QString("%1_%2_%3_%4.csv").arg(name, foot, timeStr, ip);
-    initRMT(saveDir, csvName);
+    initRMT(csvDir, csvName);
 }
 
 void MySocket::setCsvPath(const QString& name, const QString& saveDir) {
     QDateTime currentDateTime = QDateTime::currentDateTime();
     QString timeStr = currentDateTime.toString("MMdd-hh-mm-ss");
+    QString dateStr = currentDateTime.toString("MMdd");
     QString type = "cali";
+    QString csvDir = saveDir + "/" + dateStr;
     QString csvName = QString("%1_%2_%3_%4.csv").arg(name, type, timeStr, ip);
-    initRMT(saveDir, csvName);
+    initRMT(csvDir, csvName);
 }
 
 void MySocket::setLeft(bool flag) {

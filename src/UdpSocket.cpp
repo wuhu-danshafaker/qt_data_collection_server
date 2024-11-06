@@ -6,17 +6,15 @@ UdpSocket::UdpSocket(QObject *parent) : QObject(parent){
 }
 
 UdpSocket::~UdpSocket(){
-//    udp_sock->close();
+    udp_sock->close();
 //    udp_sock->deleteLater();
 //    delete udp_sock; 手动删除会导致报错
 }
 
 void UdpSocket::createSocket() {
     udp_sock = new QUdpSocket;
-
-//    udp_sock->bind(8265, QUdpSocket::ShareAddress);
     connect(udp_sock, SIGNAL(readyRead()), this, SLOT(onReadyReadData()));
-    udp_sock->bind(QHostAddress::AnyIPv4, 8265);
+    udp_sock->bind(getIp(), 8265);
 }
 
 void UdpSocket::sendData(QString data) {
@@ -40,15 +38,14 @@ void UdpSocket::onReadyReadData() {
 
 void UdpSocket::writeIpToESP(const QByteArray& data) {
     if(data == "Here is esp32s3."){
-        QByteArray dataToSend = "IP:"+getIp().toLatin1();
+        QByteArray dataToSend = "IP:"+getIp().toString().toLatin1();
         qDebug() << dataToSend;
         udp_sock->writeDatagram(dataToSend, dataToSend.size(), udp_hostAddr, udp_port);
         emit addMsg(dataToSend);
     }
 }
 
-QString UdpSocket::getIp() {
-//    QList<QHostAddress> list = QNetworkInterface::allAddresses();
+QHostAddress UdpSocket::getIp() {
     QList<QNetworkInterface> iFaceList = QNetworkInterface::allInterfaces();
     qDebug() << iFaceList.count();
     for(int i=0;i<iFaceList.count();i++){
@@ -63,17 +60,12 @@ QString UdpSocket::getIp() {
                 const QNetworkAddressEntry &entry = entryList.at(j);
                 if (entry.ip().protocol()==QAbstractSocket::IPv4Protocol) {
                     qDebug() << " IP地址：" << entry.ip().toString();
-                    return entry.ip().toString();
+                    return entry.ip();
                 }
             }
         }
     }
-
-//    foreach (QHostAddress address, list){
-//        if(address.protocol()==QAbstractSocket::IPv4Protocol)
-//            return address.toString();
-//    }
-    return "";
+    return QHostAddress::AnyIPv4;
 }
 
 UdpThread::UdpThread(MyServer *server, QObject *parent) : QThread(parent){
