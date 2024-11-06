@@ -38,7 +38,7 @@ void UdpSocket::onReadyReadData() {
     }
 }
 
-void UdpSocket::writeIpToESP(QByteArray data) {
+void UdpSocket::writeIpToESP(const QByteArray& data) {
     if(data == "Here is esp32s3."){
         QByteArray dataToSend = "IP:"+getIp().toLatin1();
         qDebug() << dataToSend;
@@ -48,11 +48,31 @@ void UdpSocket::writeIpToESP(QByteArray data) {
 }
 
 QString UdpSocket::getIp() {
-    QList<QHostAddress> list = QNetworkInterface::allAddresses();
-    foreach (QHostAddress address, list){
-        if(address.protocol()==QAbstractSocket::IPv4Protocol)
-            return address.toString();
+//    QList<QHostAddress> list = QNetworkInterface::allAddresses();
+    QList<QNetworkInterface> iFaceList = QNetworkInterface::allInterfaces();
+    qDebug() << iFaceList.count();
+    for(int i=0;i<iFaceList.count();i++){
+        const auto& var = iFaceList.at(i);
+
+        if (!(var.flags() & QNetworkInterface::IsUp) || !(var.flags() & QNetworkInterface::IsRunning)) {
+            continue;
+        }
+        if (var.humanReadableName().contains("WLAN")) {
+            QList<QNetworkAddressEntry> entryList = var.addressEntries();
+            for (int j = 0; j < entryList.count(); j++) {
+                const QNetworkAddressEntry &entry = entryList.at(j);
+                if (entry.ip().protocol()==QAbstractSocket::IPv4Protocol) {
+                    qDebug() << " IP地址：" << entry.ip().toString();
+                    return entry.ip().toString();
+                }
+            }
+        }
     }
+
+//    foreach (QHostAddress address, list){
+//        if(address.protocol()==QAbstractSocket::IPv4Protocol)
+//            return address.toString();
+//    }
     return "";
 }
 

@@ -1,11 +1,22 @@
 #include "FSRDisplay.h"
 
+double median(double a, double b, double c){
+    if((a<=b&&a>=c)||(a<=c&&a>=b)) return a;
+    if((b<=a&&b>=c)||(b<=c&&b>=a)) return b;
+    if((c<=a&&c>=b)||(c<=b&&c>=a)) return c;
+    return -1;
+}
+
 void FSRDisplay::updateFootPrint(const MsgData& msg) {
     for(int i=0;i<8;i++){
         qreal ratio = std::min(msg.fsr[i]/20.0, 1.0);  // 3000!
         colors[i] = interpolate(Qt::red, QColor(85, 170, 127), ratio);
         circles[i]->setBrush(QBrush(colors[i]));
-        fsrPlot->graph(i)->addData(msg.timeCounter, msg.fsr[i]);
+        int cnt = fsrPlot->graph(i)->data().data()->size();
+        auto result = (cnt>3)? (median(msg.fsr[i], fsrPlot->graph(i)->data()->at(cnt-1)->value, fsrPlot->graph(i)->data
+        ()->at
+        (cnt-2)->value)) : msg.fsr[i];  //不对！导致没有变化了
+        fsrPlot->graph(i)->addData(msg.timeCounter, result); // 中位数滤波
         if(msg.timeCounter>500){
             fsrPlot->graph(i)->data()->removeBefore(200);
         }
@@ -190,7 +201,7 @@ void FSRDisplay::startDisplay(const QString& name, const QString& saveDir, bool 
     RecvMsgThread *rmtForClient = socket->getRMT();
     connect(rmtForClient, &RecvMsgThread::resultReady, this, &FSRDisplay::updateFootPrint);
     rmtForClient->resume();
-    QByteArray cmd = isResume ? "CMD: resume record" : "CMD: start record";
+    QByteArray cmd = "CMD: start record";
     emit socket->writeMsg(cmd);  // emit以后 槽函数会在socketThread中运行而非主线程
 }
 

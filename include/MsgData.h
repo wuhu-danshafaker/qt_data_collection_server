@@ -4,7 +4,7 @@
 #include <QByteArray>
 #include <QMutex>
 
-#define BYTE_LENGTH 108
+#define BYTE_LENGTH 132
 
 class MsgData{
 public:
@@ -18,6 +18,7 @@ public:
     double ntc[4];
     double vcc;
     double imuAGE[9];
+    double mag[3];
     unsigned long timeCounter;
     QString ip_esp32s3;
 

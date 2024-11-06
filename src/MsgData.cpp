@@ -66,6 +66,14 @@ bool MsgData::MsgByteExplain() {
             imuArr = byteMsg.mid(imu_idx, 8);
             imuAGE[i] = qbyte2double(imuArr);
         }
+
+        QByteArray magArr;
+        int mag_idx;
+        for(int i=0;i<3;i++){
+            mag_idx = i*8 + 6 + 26 + 72;
+            magArr = byteMsg.mid(mag_idx, 8);
+            mag[i] = qbyte2double(magArr);
+        }
         ip_esp32s3 = ipByte2Str(byteMsg.right(4));
         return true;
     } else{

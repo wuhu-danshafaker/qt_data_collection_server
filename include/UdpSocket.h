@@ -18,7 +18,7 @@ public:
 
     void sendData(QString data);
     void setTargetInfo(QString ip, quint16 port);
-    QString getIp();
+    static QString getIp();
 
 signals:
     void recvDataSignal(QByteArray data);
@@ -26,7 +26,7 @@ signals:
 
 public slots:
     void onReadyReadData();
-    void writeIpToESP(QByteArray data);
+    void writeIpToESP(const QByteArray& data);
 
 private:
     QUdpSocket *udp_sock;

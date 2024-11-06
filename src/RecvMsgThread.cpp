@@ -35,6 +35,9 @@ void RecvMsgThread::run() {
                 for (double i : tmpData.imuAGE){
                     dataOnce << QString::number(i);
                 }
+                for (double i : tmpData.mag){
+                    dataOnce << QString::number(i);
+                }
                 for (int i : tmpData.adc_vol){
                     dataOnce << QString::number(i);
                 }
@@ -111,6 +114,7 @@ void RecvMsgThread::initCsv(const QString& saveDir, const QString& csvName) {
         header << "NTC"+QString::number(i);
     }
     header << "AccX" << "AccY" << "AccZ" << "GyroX" << "GyroY" << "GyroZ" << "EulerX" << "EulerY" << "EulerZ";
+    header << "MagX" << "MagY" << "MagZ";
     for (int i=0;i<13;i++){
         header << "ADC"+QString::number(i);
     }

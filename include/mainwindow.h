@@ -19,6 +19,7 @@
 #include "RecvMsgThread.h"
 #include "MsgData.h"
 #include "FSRDisplay.h"
+#include "CaliGraph.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -40,12 +41,22 @@ private slots:
     void on_tcpBtn_clicked();
     void on_recordBtn_clicked();
     void on_addNewDoc_clicked();
+    void on_editCurrentDoc_clicked();
     void on_reset_clicked();
     void on_databaseAdd_clicked();
     void on_databaseDelete_clicked();
     void on_databaseConfirm_clicked();
     void on_databaseCancel_clicked();
     void on_databaseFind_clicked();
+    void on_caliBtn_clicked();
+    void on_CaliRecord_clicked();
+    void on_AccCaliOn_clicked();
+    void on_GyroCaliAutoOn_clicked();
+    void on_GyroCaliAutoOff_clicked();
+    void on_MagCaliStart_clicked();
+    void on_MagCaliStop_clicked();
+    void on_MagCaliSave_clicked();
+    void on_setAngleRef_clicked();
 
     void updateTimeAndDisplay();
     void fsrBtnClicked();
@@ -63,6 +74,8 @@ private:
 
     FSRDisplay *leftFoot;
     FSRDisplay *rightFoot;
+
+    CaliGraph *caliGraph;
 
     MyServer *m_server;
     UdpThread *udpThread;

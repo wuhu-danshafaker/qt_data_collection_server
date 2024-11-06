@@ -19,7 +19,6 @@ MySocket::~MySocket(){
 
 void MySocket::deal_readyRead(){
     auto* tcpSocket = dynamic_cast<MySocket*>(sender());
-    qDebug() << "reading";
     //获取客户端发来的数据
     QByteArray msg;
     QByteArray header = "\x5A\x55";
@@ -70,6 +69,7 @@ void MySocket::deal_disconnect(){
     auto *tcpSocket = dynamic_cast<MySocket *>(sender());
     if (tcpSocket==this){
         qDebug() << "socket disconnected:";
+//        emit tcpSocket->writeMsg("CMD: stop record");
         //断开socket
         tcpSocket->abort();
         //消息提示断开
@@ -120,6 +120,14 @@ void MySocket::setCsvPath(bool is_Left, const QString& name, const QString& save
     QString timeStr = currentDateTime.toString("MMdd-hh-mm-ss");
     QString foot = (is_Left) ? "left" : "right";
     QString csvName = QString("%1_%2_%3_%4.csv").arg(name, foot, timeStr, ip);
+    initRMT(saveDir, csvName);
+}
+
+void MySocket::setCsvPath(const QString& name, const QString& saveDir) {
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QString timeStr = currentDateTime.toString("MMdd-hh-mm-ss");
+    QString type = "cali";
+    QString csvName = QString("%1_%2_%3_%4.csv").arg(name, type, timeStr, ip);
     initRMT(saveDir, csvName);
 }
 

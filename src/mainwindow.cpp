@@ -26,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
     leftFoot = new FSRDisplay();
     displayInit();
 
+    caliGraph = new CaliGraph(ui->XZ, ui->YZ, ui->XY, ui->Acc, ui->Gyro, ui->Euler);
+
     pTimer = nullptr;
 
     model = new QSqlTableModel(this);
@@ -39,6 +41,9 @@ MainWindow::MainWindow(QWidget *parent) :
     qDebug() << "mainThread:" << QThread::currentThreadId();
 
     ui->Body->setContentsMargins(0,0,0,0);
+    ui->CaliRecord->setProperty("isOn", false);
+    ui->MagCaliSave->setEnabled(false);
+    ui->MagCaliStop->setEnabled(false);
 //    auto *blurEffect = new QGraphicsBlurEffect;
 //    ui->Body->setGraphicsEffect(blurEffect);
 }
@@ -253,7 +258,6 @@ void MainWindow::setAsBtnClicked() {
     QString espIp = comboBox->currentText();
     QVariant var = comboBox->currentData();
     if(!espIp.isEmpty()){
-        qDebug() << espIp;
         QString str = QString("%1%2").arg(btn->property("type").toString(), "Is");
         auto idx = var.value<qsizetype>();
         if(str=="LeftIs"){
@@ -385,6 +389,10 @@ void MainWindow::on_addNewDoc_clicked() {
     databaseInsert(name, date_time, age, height, weight, info, csvPath);
 }
 
+void MainWindow::on_editCurrentDoc_clicked() {
+    ui->mainPage->setCurrentIndex(1);
+}
+
 void MainWindow::on_databaseAdd_clicked() {
     QSqlRecord record = model->record();
     int row = model->rowCount();
@@ -441,5 +449,94 @@ void MainWindow::on_databaseFind_clicked() {
     }
     qDebug() << "FIND: " << filterStr;
 }
+
+void MainWindow::on_caliBtn_clicked() {
+    QComboBox *comboBox = ui->clientComboBox;
+    QString espIp = comboBox->currentText();
+    QVariant var = comboBox->currentData();
+    if(!espIp.isEmpty()) {
+        auto idx = var.value<qsizetype>();
+        auto *espIs = ui->caliIp;
+        espIs->setText(espIp);
+        caliGraph->setSocket(m_server->list_information[idx].getSocket());
+    }
+    ui->mainPage->setCurrentIndex(2);
+}
+
+void MainWindow::on_CaliRecord_clicked() {
+    if(!caliGraph->status()) return;
+    bool isOn = ui->CaliRecord->property("isOn").toBool();
+    if(!isOn){
+        qDebug()<<"is On";
+        caliGraph->resetPlot();
+        caliGraph->startRecord();
+//        TODO:
+//        新连接的无法record的原因就在isResume,该设置是有问题的——他以pTimer为标准。
+        ui->CaliRecord->setProperty("isOn", true);
+        ui->CaliRecord->setText("Stop Record");
+    } else{
+        qDebug()<<"is Off";
+        caliGraph->pauseRecord();
+        ui->CaliRecord->setProperty("isOn", false);
+        ui->CaliRecord->setText("Start Record");
+    }
+}
+
+void MainWindow::on_AccCaliOn_clicked() {
+    if(caliGraph->status()){
+        caliGraph->startAccCali();
+    }
+}
+
+void MainWindow::on_GyroCaliAutoOn_clicked() {
+    if(caliGraph->status()){
+        QByteArray cmd = "CMD: set gyro auto cali on";
+        caliGraph->sendCaliCmd(cmd);
+    }
+}
+
+void MainWindow::on_GyroCaliAutoOff_clicked() {
+    if(caliGraph->status()){
+        QByteArray cmd = "CMD: set gyro auto cali off";
+        caliGraph->sendCaliCmd(cmd);
+    }
+}
+
+void MainWindow::on_MagCaliStart_clicked() {
+    if(caliGraph->status()){
+        caliGraph->resetPlot(true);
+        QByteArray cmd = "CMD: start magnetometer cali";
+        caliGraph->sendCaliCmd(cmd);
+        ui->MagCaliStop->setEnabled(true);
+        ui->MagCaliStart->setEnabled(false);
+    }
+}
+
+void MainWindow::on_MagCaliStop_clicked() {
+    if(caliGraph->status()){
+        QByteArray cmd = "CMD: stop magnetometer cali";
+        caliGraph->sendCaliCmd(cmd);
+        ui->MagCaliSave->setEnabled(true);
+        ui->MagCaliStart->setEnabled(true);
+        ui->MagCaliStop->setEnabled(false);
+    }
+}
+
+void MainWindow::on_MagCaliSave_clicked() {
+    if(caliGraph->status()){
+        QByteArray cmd = "CMD: save cali result";
+        caliGraph->sendCaliCmd(cmd);
+        ui->MagCaliStart->setEnabled(true);
+    }
+}
+
+void MainWindow::on_setAngleRef_clicked() {
+    if(caliGraph->status()){
+        QByteArray cmd = "CMD: set angle reference";
+        caliGraph->sendCaliCmd(cmd);
+    }
+}
+
+
 
 

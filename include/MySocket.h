@@ -29,6 +29,7 @@ public:
     void stopRMT();
 
     void setCsvPath(bool isLeft, const QString& name, const QString& saveDir);
+    void setCsvPath(const QString& name, const QString& saveDir);
     void setLeft(bool flag);
 private:
     RecvMsgThread *rmt;
