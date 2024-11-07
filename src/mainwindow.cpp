@@ -107,7 +107,9 @@ void MainWindow::on_tcpBtn_clicked() {
 QString MainWindow::setSaveDir(QString& name, QString& trialType) {
     QDir dir;
     QString targetDir;
-    QString csvDir = QString("../csvData/%1").arg(name);
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QString dateStr = currentDateTime.toString("MMdd");
+    QString csvDir = QString("../csvData/%1/%2").arg(name, dateStr);
     if(trialType=="Test"){
         targetDir = QString("%1/%2").arg(csvDir, trialType);
         if(!dir.exists(targetDir)){
