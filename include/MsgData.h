@@ -32,7 +32,8 @@ private:
     static double ntcVol2T(int vol, double vcc_real);
     int fsrMapL[8] = {3,4,2,0,1,7,5,6};
     int fsrMapR[8] = {1,0,2,3,4,5,7,6};
-    int ntcMapL[4] = {2,1,3,0};
+//    int ntcMapL[4] = {2,1,3,0};
+    int ntcMapL[4] = {3,1,0,2};
     int ntcMapR[4] = {3,2,1,0};
     double fsrFactor[8] = {3.55, 4.65, 4.85, 4.6, 4.65, 4.2, 4.55, 3.75};
 //    double fsrFactorR[8] = {4.8,4.3,4.6,3.3,4.5,3.6,4.1,4.5};

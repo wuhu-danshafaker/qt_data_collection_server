@@ -46,7 +46,7 @@ bool MsgData::MsgByteExplain() {
                 } else{
                     idx = fsrMapR[i-1];
                 }
-                fsr[idx] = fsrVol2F(adc_vol[i]/1000.0, vcc, fsrFactor[i-1]);
+                fsr[idx] = fsrVol2F(adc_vol[i], vcc, fsrFactor[i-1]);
             }
             else{
                 int idx;
@@ -96,7 +96,7 @@ double MsgData::qbyte2double(QByteArray src) {
 }
 
 double MsgData::fsrVol2F(double vol, double vcc_real, double factor) {
-    return vol/vcc_real*factor;
+    return vol/vcc_real/factor;
 }
 
 double MsgData::ntcVol2T(int vol, double vcc_real) {
@@ -105,10 +105,6 @@ double MsgData::ntcVol2T(int vol, double vcc_real) {
     }
     return (3795.9 - vol*5/4.98)/51 ;
 }
-
-//QByteArray MsgData::imuArr() {
-//    return byteMsg.mid(32, 72).toHex();
-//}
 
 QString MsgData::ipByte2Str(const QByteArray& src) {
     QByteArray src_data = src;
@@ -122,7 +118,3 @@ QString MsgData::ipByte2Str(const QByteArray& src) {
     return QString("%1.%2.%3.%4").arg(ip1).arg(ip2).arg(ip3).arg(ip4);
 }
 
-
-
-//QQueue<MsgData> Msg_queue;
-//QMutex mutexMsg;
