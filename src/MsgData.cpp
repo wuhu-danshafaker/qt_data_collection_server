@@ -46,7 +46,8 @@ bool MsgData::MsgByteExplain() {
                 } else{
                     idx = fsrMapR[i-1];
                 }
-                fsr[idx] = fsrVol2F(adc_vol[i], vcc, fsrFactor[i-1]);
+//                fsr[idx] = fsrVol2F(adc_vol[i], vcc, fsrFactor[i-1]);
+                fsr[idx] = fsrVol2F(adc_vol[i], vcc, 1);  // 效果如何？
             }
             else{
                 int idx;
@@ -96,7 +97,7 @@ double MsgData::qbyte2double(QByteArray src) {
 }
 
 double MsgData::fsrVol2F(double vol, double vcc_real, double factor) {
-    return vol/vcc_real/factor;
+    return vol/vcc_real*factor;
 }
 
 double MsgData::ntcVol2T(int vol, double vcc_real) {

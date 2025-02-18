@@ -1,0 +1,22 @@
+{
+  "Left FSR Factor": {
+    "fsr1": 0.3,
+    "fsr2": 0.5,
+    "fsr3": 0.4,
+    "fsr4": 0.9,
+    "fsr5": 0.6,
+    "fsr6": 1,
+    "fsr7": 1,
+    "fsr8": 1.5
+  },
+  "Right FSR Factor": {
+    "fsr1": 1,
+    "fsr2": 1,
+    "fsr3": 1,
+    "fsr4": 0.75,
+    "fsr5": 0.6,
+    "fsr6": 1.4,
+    "fsr7": 1.7,
+    "fsr8": 2
+  }
+}

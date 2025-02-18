@@ -110,7 +110,7 @@ QTabBar::tab::selected{
 </string>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <property name="iconSize">
          <size>
@@ -2759,6 +2759,13 @@ li.checked::marker { content: &quot;\2612&quot;; }
                   </spacer>
                  </item>
                  <item>
+                  <widget class="QPushButton" name="fsrFactorBtn">
+                   <property name="text">
+                    <string>FSR 参数调整</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
                   <widget class="QTextEdit" name="textEdit">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -2779,7 +2786,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;使用前，确保已单独连接到需要校准的设备，然后执行Start Record，开启设备通信。此时各项数据将显示在左侧图表中，包括磁力图（左列三图为XZ YZ XY），加速度图（中列上图），角速度图（中列中图）和欧拉角图（中列下图）。&lt;/p&gt;
 &lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Mag Cali Start: 启动磁力校准，在弱磁环境下，使设备绕各个轴旋转，观察磁力图中的轨迹点是否足以形成一个大椭圆，随后点击Mag Cali Stop结束校准，点击Cali Result Save将校准结果写入IMU。&lt;/p&gt;
 &lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Acc Cali: 平放静止IMU，此选项将使XY轴的加速度归零，Z轴加速度为g。&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Gyro Auto Cali: 若开启此功能（默认开启），角速度计将自动处理微小的漂移和抖动。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Gyro Auto Cali: 若开启此功能（默认开启），角速度计将自动处理微小的漂移和抖动。&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;FSR参数调整: 调用json配置fsr-F因数&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                   </widget>
                  </item>

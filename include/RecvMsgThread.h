@@ -32,7 +32,8 @@ public:
 private:
     bool thread_running;
     QString csvPath;
-
+    double leftFsrFactor[8] = {1,1,1,1,1,1,1,1};
+    double rightFsrFactor[8] = {1,1,1,1,1,1,1,1};
 signals:
     void resultReady(MsgData result);
 };
