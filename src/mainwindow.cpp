@@ -44,6 +44,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->CaliRecord->setProperty("isOn", false);
     ui->MagCaliSave->setEnabled(false);
     ui->MagCaliStop->setEnabled(false);
+
+    folderComboInit();
 //    auto *blurEffect = new QGraphicsBlurEffect;
 //    ui->Body->setGraphicsEffect(blurEffect);
 }
@@ -57,6 +59,10 @@ MainWindow::~MainWindow() {
     udpThread->quit();
     udpThread->wait();
     delete udpThread;
+
+    loaderThread->quit();
+    loaderThread->wait();
+    delete folderLoader;
 }
 
 void MainWindow::on_tcpBtn_clicked() {
@@ -109,7 +115,7 @@ QString MainWindow::setSaveDir(QString& name, QString& trialType) {
     QString targetDir;
     QDateTime currentDateTime = QDateTime::currentDateTime();
     QString dateStr = currentDateTime.toString("MMdd");
-    QString csvDir = QString("../csvData/%1/%2").arg(name, dateStr);
+    QString csvDir = QString("../csvData/%1/%2").arg(dateStr, name);
     if(trialType=="Test"){
         targetDir = QString("%1/%2").arg(csvDir, trialType);
         if(!dir.exists(targetDir)){
@@ -145,7 +151,7 @@ void MainWindow::on_recordBtn_clicked() {
         return;
     }
 
-    bool isResume = true;
+    bool isResume = true;  // 已被弃用，在esp32上解决了resume和start的兼容问题
     // 初次按下
     if(!pTimer){
         pTimer = new QTimer;
@@ -158,15 +164,17 @@ void MainWindow::on_recordBtn_clicked() {
         qDebug()<<"restart recording";
         leftFoot->resetPlot();
         rightFoot->resetPlot();
-        baseTime = QTime::currentTime();
-        updateTimeAndDisplay();
-        pTimer->start(800);
+        leftFoot->checkConnection();
+        rightFoot->checkConnection();
         QString trialType = ui->trialComboBox->currentText();
         QString saveDir = setSaveDir(name, trialType);
         leftFoot->startDisplay(name, saveDir, isResume);
         rightFoot->startDisplay(name, saveDir, isResume);
         recording = true;
         on_addServerMessage("pTimer: recording");
+        baseTime = QTime::currentTime();
+        updateTimeAndDisplay();
+        pTimer->start(800);
     } else{
         pTimer->stop();
         recording = false;
@@ -450,6 +458,8 @@ void MainWindow::on_databaseFind_clicked() {
         model->select();
     }
     qDebug() << "FIND: " << filterStr;
+
+//    loadSubFoldersToComboBox(ui->comboBox_date, "../csvData");
 }
 
 void MainWindow::on_caliBtn_clicked() {
@@ -472,8 +482,6 @@ void MainWindow::on_CaliRecord_clicked() {
         qDebug()<<"is On";
         caliGraph->resetPlot();
         caliGraph->startRecord();
-//        TODO:
-//        新连接的无法record的原因就在isResume,该设置是有问题的——他以pTimer为标准。
         ui->CaliRecord->setProperty("isOn", true);
         ui->CaliRecord->setText("Stop Record");
     } else{
@@ -539,6 +547,329 @@ void MainWindow::on_setAngleRef_clicked() {
     }
 }
 
+void MainWindow::loadSubFoldersToComboBox(QComboBox *comboBox, const QString &folderPath) {
+    comboBox->clear();
 
+    // 检查文件夹是否存在
+    QDir dir(folderPath);
+    if (!dir.exists()) {
+        qDebug() << "Folder does not exist:" << folderPath;
+        return;
+    }
+
+    // 获取所有子文件夹
+    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot); // 只获取文件夹，排除 "." 和 ".."
+    QStringList subFolders = dir.entryList();
+
+    // 将子文件夹名称添加到 QComboBox
+    comboBox->addItems(subFolders);
+}
+
+void MainWindow::folderComboInit() {
+    // 初始化 UI
+    QComboBox* comboBoxDate = ui->comboBox_date;
+    QComboBox* comboBoxName = ui->comboBox_name;
+//    QComboBox* comboBoxTrail = ui->comboBox_trail;
+
+    // 初始化文件夹加载器
+    folderLoader = new FolderLoader;
+    loaderThread = new QThread;
+    folderLoader->moveToThread(loaderThread);
+    loaderThread->start();
+
+    connect(ui->checkBox_left, &QCheckBox::clicked, this, [&]() {
+        ui->checkBox_left->setChecked(!ui->checkBox_left->isChecked());
+    });
+    connect(ui->checkBox_right, &QCheckBox::clicked, this, [&]() {
+        ui->checkBox_right->setChecked(!ui->checkBox_right->isChecked()); // 保持当前状态不变
+    });
+    connect(ui->checkBox_result, &QCheckBox::clicked, this, [&]() {
+        ui->checkBox_result->setChecked(!ui->checkBox_result->isChecked()); // 保持当前状态不变
+    });
+
+    // 连接信号槽
+    connect(comboBoxDate, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::updateComboBoxName);
+    connect(comboBoxName, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::updateComboBoxTrail);
+    connect(folderLoader, &FolderLoader::subFoldersLoaded, this, &MainWindow::onSubFoldersLoaded);
+
+    // 初始化日期文件夹
+    loadSubFoldersAsync("../csvData", comboBoxDate);
+}
+
+// 更新第二个 ComboBox（名称文件夹）
+void MainWindow::updateComboBoxName() {
+    QComboBox* comboBoxDate = ui->comboBox_date;
+    QComboBox* comboBoxName = ui->comboBox_name;
+
+    // 获取选定的日期文件夹
+    QString dateFolder = comboBoxDate->currentText();
+    QString csvDataPath = "../csvData"; // 替换为你的 csvData 文件夹路径
+    QString nameFolderPath = csvDataPath + "/" + dateFolder;
+
+    // 加载名称文件夹到 comboBoxName
+//    loadSubFoldersToComboBox(comboBoxName, nameFolderPath);
+    loadSubFoldersAsync(nameFolderPath, comboBoxName);
+}
+
+void MainWindow::updateComboBoxTrail() {
+    QComboBox* comboBoxDate = ui->comboBox_date;
+    QComboBox* comboBoxName = ui->comboBox_name;
+    QComboBox* comboBoxTrail = ui->comboBox_trail;
+
+    // 获取选定的日期文件夹和名称文件夹
+    QString dateFolder = comboBoxDate->currentText();
+    QString nameFolder = comboBoxName->currentText();
+    QString csvDataPath = "../csvData";
+    QString trailFolderPath = csvDataPath + "/" + dateFolder + "/" + nameFolder;
+
+    loadSubFoldersAsync(trailFolderPath, comboBoxTrail);
+}
+
+void MainWindow::onSubFoldersLoaded(const QStringList &subFolders) {
+    auto targetComboBox = qobject_cast<QComboBox*>(sender()->property("targetComboBox").value<QObject*>());
+    if (targetComboBox) {
+        targetComboBox->clear();
+        targetComboBox->addItems(subFolders);
+    }
+}
+
+void MainWindow::loadSubFoldersAsync(const QString &folderPath, QComboBox *targetComboBox) {
+    // 设置目标 QComboBox
+    folderLoader->setProperty("targetComboBox", QVariant::fromValue(static_cast<QObject*>(targetComboBox)));
+    // 异步加载子文件夹
+    QMetaObject::invokeMethod(folderLoader, "loadSubFolders", Qt::QueuedConnection, Q_ARG(QString, folderPath));
+    ui->checkBox_left->setChecked(false);
+    ui->checkBox_right->setChecked(false);
+    ui->checkBox_result->setChecked(false);
+}
+
+void MainWindow::on_findRecordsBtn_clicked() {
+    QComboBox* comboBoxDate = ui->comboBox_date;
+    QComboBox* comboBoxName = ui->comboBox_name;
+    QComboBox* comboBoxTrail = ui->comboBox_trail;
+
+    QString dateFolder = comboBoxDate->currentText();
+    QString nameFolder = comboBoxName->currentText();
+    QString trailFolder = comboBoxTrail->currentText();
+    if(dateFolder.isEmpty() | nameFolder.isEmpty() | trailFolder.isEmpty()){
+        qDebug() << "Folder Not Exists";
+    }
+
+    QString csvDataPath = "../csvData";
+    QString targetFolder = csvDataPath + "/" + dateFolder + "/" + nameFolder + "/" + trailFolder;
+
+    QDir dir(targetFolder);
+    if (!dir.exists()) {
+        qDebug() << "Folder does not exist:" << targetFolder;
+        return;
+    }
+
+    QStringList leftFiles = dir.entryList({"*_left_*.csv"}, QDir::Files);
+    QStringList rightFiles = dir.entryList({"*_right_*.csv"}, QDir::Files);
+
+    bool hasLeft = !leftFiles.isEmpty();
+    bool hasRight = !rightFiles.isEmpty();
+    bool hasResult = dir.exists("result.log") & dir.exists("data.json");
+
+    ui->checkBox_left->setChecked(hasLeft);
+    ui->checkBox_right->setChecked(hasRight);
+    ui->checkBox_result->setChecked(hasResult);
+    QString records = (hasLeft & hasRight)? "左右足记录已查询到" : "左右足记录缺失";
+    ui->label_detail->setText("Detail: " + targetFolder + " " + records);
+}
+
+void MainWindow::on_calculateResultBtn_clicked() {
+    if (!ui->checkBox_left->isChecked() | !ui->checkBox_right->isChecked()){
+        qDebug() << "记录缺失";
+        ui->docDetail->setText("记录缺失,无法计算");
+        return;
+    }
+
+    // 创建 QProcess 实例
+    auto *process = new QProcess(this);
+
+    // 设置要执行的命令和参数
+    QString program = "../scripts/analysis.exe"; // 替换为你的 EXE 路径
+    QStringList arguments;
+
+    QComboBox* comboBoxDate = ui->comboBox_date;
+    QComboBox* comboBoxName = ui->comboBox_name;
+    QComboBox* comboBoxTrail = ui->comboBox_trail;
+    QString dateFolder = comboBoxDate->currentText();
+    QString nameFolder = comboBoxName->currentText();
+    QString trailFolder = comboBoxTrail->currentText();
+    QString csvDataPath = "../csvData";
+    QString targetFolder = csvDataPath + "/" + dateFolder + "/" + nameFolder + "/" + trailFolder;
+
+    arguments << "--csvPath" << targetFolder;
+    // 启动进程
+    process->start(program, arguments);
+    ui->docDetail->setText("计算中\n");
+    connect(process, &QProcess::readyReadStandardOutput, this, [this, process]() {
+//        QByteArray output = process->readAllStandardOutput();
+        ui->docDetail->append("计算完成");
+    });
+
+    connect(process, &QProcess::readyReadStandardError, this, [this, process]() {
+        QByteArray errorOutput = process->readAllStandardError();
+        ui->docDetail->append(QString::fromLocal8Bit(errorOutput));
+    });
+    // 可选：处理进程结束信号
+    connect(process, &QProcess::finished, this, [process](int exitCode, QProcess::ExitStatus exitStatus){
+        if (exitStatus == QProcess::NormalExit) {
+            qDebug() << "Process finished with exit code:" << exitCode;
+        } else {
+            qDebug() << "Process crashed";
+        }
+        process->deleteLater(); // 清理进程对象
+    });
+}
+
+void MainWindow::on_showResultBtn_clicked() {
+    ui->docDetail->clear();
+    QComboBox* comboBoxDate = ui->comboBox_date;
+    QComboBox* comboBoxName = ui->comboBox_name;
+    QComboBox* comboBoxTrail = ui->comboBox_trail;
+    QString dateFolder = comboBoxDate->currentText();
+    QString nameFolder = comboBoxName->currentText();
+    QString trailFolder = comboBoxTrail->currentText();
+    QString csvDataPath = "../csvData";
+    QString targetFolder = csvDataPath + "/" + dateFolder + "/" + nameFolder + "/" + trailFolder;
+
+    QString jsonFile = targetFolder + "/" + "data.json";
+    QFile file(jsonFile);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        ui->docDetail->append("Failed to open JSON file.");
+        return;
+    }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+    if (jsonDoc.isNull()) {
+        ui->docDetail->append("Failed to parse JSON data.");
+        return;
+    }
+
+    // 获取根对象
+    QJsonObject rootObj = jsonDoc.object();
+
+    // 解析 "imu para"
+    if (rootObj.contains("imu para") && rootObj["imu para"].isObject()) {
+        QJsonObject imuParaObj = rootObj["imu para"].toObject();
+        ui->docDetail->append("IMU Result: \n");
+        // 解析 "left"
+        if (imuParaObj.contains("left") && imuParaObj["left"].isObject()
+        && imuParaObj.contains("right") && imuParaObj["right"].isObject()) {
+            QJsonObject leftObj = imuParaObj["left"].toObject();
+            QJsonObject rightObj = imuParaObj["right"].toObject();
+            ui->docDetail->append(QString("Stride Length(left, right): %1, %2")
+                                          .arg(leftObj["stride length"].toDouble())
+                                          .arg(rightObj["stride length"].toDouble()));
+            ui->docDetail->append(QString("Stride Time(left, right): %1, %2")
+                                          .arg(leftObj["stride time"].toDouble())
+                                          .arg(rightObj["stride time"].toDouble()));
+            ui->docDetail->append(QString("Stance Time(left, right): %1, %2")
+                                          .arg(leftObj["stance time"].toDouble())
+                                          .arg(rightObj["stance time"].toDouble()));
+            ui->docDetail->append(QString("Swing Time(left, right): %1, %2")
+                                          .arg(leftObj["swing time"].toDouble())
+                                          .arg(rightObj["swing time"].toDouble()));
+            ui->docDetail->append(QString("Speed(left, right): %1, %2")
+                                          .arg(leftObj["speed"].toDouble())
+                                          .arg(rightObj["speed"].toDouble()));
+            ui->docDetail->append(QString("AnglePF(left, right): %1, %2")
+                                          .arg(leftObj["anglePF"].toDouble())
+                                          .arg(rightObj["anglePF"].toDouble()));
+            ui->docDetail->append(QString("AngleDF(left, right): %1, %2")
+                                          .arg(leftObj["angleDF"].toDouble())
+                                          .arg(rightObj["angleDF"].toDouble()));
+        }
+
+        // 解析 "others"
+        if (imuParaObj.contains("others") && imuParaObj["others"].isObject()) {
+            QJsonObject othersObj = imuParaObj["others"].toObject();
+            ui->docDetail->append(QString("Cadence: %1").arg(othersObj["cadence"].toDouble()));
+            ui->docDetail->append(QString("SI of Swing Time: %1").arg(othersObj["si_sw"].toDouble()));
+            ui->docDetail->append(QString("SI of Stride Length: %1").arg(othersObj["si_sl"].toDouble()));
+            ui->docDetail->append(QString("CV of Double Support: %1").arg(othersObj["cv_ds"].toDouble()));
+
+            // 解析数组 "cv_sw"
+            if (othersObj.contains("cv_sw") && othersObj["cv_sw"].isArray()) {
+                QJsonArray cvSwArray = othersObj["cv_sw"].toArray();
+                ui->docDetail->append(QString("CV of Swing Time(left, right): %1, %2")
+                                              .arg(cvSwArray[0].toDouble())
+                                              .arg(cvSwArray[1].toDouble()));
+            }
+
+            // 解析数组 "cv_sl"
+            if (othersObj.contains("cv_sl") && othersObj["cv_sl"].isArray()) {
+                QJsonArray cvSlArray = othersObj["cv_sl"].toArray();
+                ui->docDetail->append(QString("CV of Stride Length(left, right): %1, %2")
+                                              .arg(cvSlArray[0].toDouble())
+                                              .arg(cvSlArray[1].toDouble()));
+            }
+
+            // 解析数组 "cv_cd"
+            if (othersObj.contains("cv_cd") && othersObj["cv_cd"].isArray()) {
+                QJsonArray cvCdArray = othersObj["cv_cd"].toArray();
+                ui->docDetail->append(QString("CV of Stride Time(left, right): %1, %2")
+                                              .arg(cvCdArray[0].toDouble())
+                                              .arg(cvCdArray[1].toDouble()));
+            }
+        }
+    }
+
+    // 6. 解析 "fsr para"
+    if (rootObj.contains("fsr para") && rootObj["fsr para"].isObject()) {
+        QJsonObject fsrParaObj = rootObj["fsr para"].toObject();
+        ui->docDetail_2->clear();
+        ui->docDetail_2->append("FSR Result: \n");
+        // 解析 "left"
+        if (fsrParaObj.contains("left") && fsrParaObj["left"].isObject()) {
+            QJsonObject leftObj = fsrParaObj["left"].toObject();
+
+            // 解析 "max_pressure"
+            if (leftObj.contains("max_pressure") && leftObj["max_pressure"].isObject()
+            && leftObj.contains("duration") && leftObj["duration"].isObject()
+            && leftObj.contains("pressure integral") && leftObj["pressure integral"].isObject()) {
+                QJsonObject maxPressureObj = leftObj["max_pressure"].toObject();
+                QJsonObject durationObj = leftObj["duration"].toObject();
+                QJsonObject pressureIntegralObj = leftObj["pressure integral"].toObject();
+                for(int i=1;i<9;i++){
+                    ui->docDetail_2->append(QString("Left FSR%1 (Max Pressure, Duration,Pressure Integral):"
+                                                  "%2, %3, %4")
+                                                  .arg(i)
+                                                  .arg(maxPressureObj[QString("fsr%1").arg(i)].toDouble())
+                                                  .arg(durationObj[QString("fsr%1").arg(i)].toDouble())
+                                                  .arg(pressureIntegralObj[QString("fsr%1").arg(i)].toDouble()));
+                }
+            }
+        }
+
+        // 解析 "right"
+        if (fsrParaObj.contains("right") && fsrParaObj["right"].isObject()) {
+            QJsonObject rightObj = fsrParaObj["right"].toObject();
+
+            // 解析 "max_pressure"
+            if (rightObj.contains("max_pressure") && rightObj["max_pressure"].isObject()
+                && rightObj.contains("duration") && rightObj["duration"].isObject()
+                && rightObj.contains("pressure integral") && rightObj["pressure integral"].isObject()) {
+                QJsonObject maxPressureObj = rightObj["max_pressure"].toObject();
+                QJsonObject durationObj = rightObj["duration"].toObject();
+                QJsonObject pressureIntegralObj = rightObj["pressure integral"].toObject();
+                for(int i=1;i<9;i++){
+                    ui->docDetail_2->append(QString("Right FSR%1 (Max Pressure, Duration,Pressure Integral):"
+                                                  "%2, %3, %4")
+                                                  .arg(i)
+                                                  .arg(maxPressureObj[QString("fsr%1").arg(i)].toDouble())
+                                                  .arg(durationObj[QString("fsr%1").arg(i)].toDouble())
+                                                  .arg(pressureIntegralObj[QString("fsr%1").arg(i)].toDouble()));
+                }
+            }
+        }
+    }
+}
 
 

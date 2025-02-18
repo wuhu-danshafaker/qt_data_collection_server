@@ -84,9 +84,6 @@ void MyServer::incomingConnection(qintptr socketDescriptor) {
     }
 }
 
-
-//Q_DECLARE_METATYPE(MySocket*)
-
 // edit socket info
 void MyServer::addInfo(MySocket *mySocket, int index) {
 
@@ -102,8 +99,7 @@ void MyServer::addInfo(MySocket *mySocket, int index) {
 }
 
 void MyServer::removeInfo(MySocket *mySocket) {
-    // 不触发啊！
-    // 因为myServer已经被删除，作为槽函数来不及运行
+    // disconnect信号触发不及时！
     qDebug() << "remove info ";
     for(int i=0;i<this->list_information.count();i++){
         if(this->list_information[i].getSocket() == mySocket){

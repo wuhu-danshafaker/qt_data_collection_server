@@ -14,6 +14,7 @@
 #include <QSqlQuery>
 #include <QSqlTableModel>
 #include <QSqlRecord>
+#include <QProcess>
 
 #include "UdpSocket.h"
 #include "RecvMsgThread.h"
@@ -27,6 +28,30 @@ QT_END_NAMESPACE
 
 class MyServer;
 class SocketInformation;
+
+class FolderLoader : public QObject {
+Q_OBJECT
+
+public:
+    explicit FolderLoader(QObject* parent = nullptr) : QObject(parent) {}
+
+public slots:
+    void loadSubFolders(const QString& folderPath) {
+        QDir dir(folderPath);
+        if (!dir.exists()) {
+            emit subFoldersLoaded({});
+            return;
+        }
+
+        dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+        QStringList subFolders = dir.entryList();
+
+        emit subFoldersLoaded(subFolders);
+    }
+
+signals:
+    void subFoldersLoaded(const QStringList& subFolders);
+};
 
 class MainWindow : public QWidget {
 Q_OBJECT
@@ -57,6 +82,9 @@ private slots:
     void on_MagCaliStop_clicked();
     void on_MagCaliSave_clicked();
     void on_setAngleRef_clicked();
+    void on_findRecordsBtn_clicked();
+    void on_calculateResultBtn_clicked();
+    void on_showResultBtn_clicked();
 
     void updateTimeAndDisplay();
     void fsrBtnClicked();
@@ -85,6 +113,9 @@ private:
     bool tcpConnected;
     bool recording;
 
+    FolderLoader* folderLoader;
+    QThread* loaderThread;
+
     void databaseInit();
     void databaseInsert(const QString& name,
                         const QString& date="",
@@ -97,8 +128,15 @@ private:
     void setAsBtnInit();
     void displayInit();
     static QString setSaveDir(QString& name, QString& trialType);
+
+    void loadSubFoldersToComboBox(QComboBox* comboBox, const QString& folderPath);
+    void folderComboInit();
+    void updateComboBoxName();
+    void updateComboBoxTrail();
 public slots:
     void on_addServerMessage(const QString& message);
+    void onSubFoldersLoaded(const QStringList& subFolders);
+    void loadSubFoldersAsync(const QString& folderPath, QComboBox* targetComboBox);
 };
 
 

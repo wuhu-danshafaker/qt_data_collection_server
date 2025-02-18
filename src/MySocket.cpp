@@ -67,6 +67,7 @@ void MySocket::deal_write(const QByteArray& arr){
 
 void MySocket::deal_disconnect(){
     auto *tcpSocket = dynamic_cast<MySocket *>(sender());
+    qDebug() << "deal disconnect:";
     if (tcpSocket==this){
         qDebug() << "socket disconnected:";
 //        emit tcpSocket->writeMsg("CMD: stop record");

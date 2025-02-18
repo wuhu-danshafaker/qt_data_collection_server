@@ -151,7 +151,7 @@ void FSRDisplay::setupPlot() {
     tempPlot->xAxis->setSubTicks(false);
     tempPlot->yAxis->setSubTicks(false);
     tempPlot->xAxis->setRange(0, 5);
-    tempPlot->yAxis->setRange(20, 50);
+    tempPlot->yAxis->setRange(20, 40);
 }
 
 void FSRDisplay::setDynamicUI(QCustomPlot *pcustom) {
@@ -190,6 +190,16 @@ void FSRDisplay::setSocket(MySocket *sock) {
 
 void FSRDisplay::clearSocket() {
     socket = nullptr;
+}
+
+void FSRDisplay::checkConnection() {
+    if(!socket){
+        QString lor = (isLeft) ? "left" : "right";
+        qDebug() << lor + " 尚未绑定socket!";
+        return;
+    }
+    QByteArray cmd = "Check Connection";
+    emit socket->writeMsg(cmd);  // emit以后 槽函数会在socketThread中运行而非主线程
 }
 
 void FSRDisplay::startDisplay(const QString& name, const QString& saveDir, bool isResume) {

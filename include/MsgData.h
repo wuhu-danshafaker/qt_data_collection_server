@@ -30,7 +30,8 @@ private:
     static double qbyte2double(QByteArray src);
     static double fsrVol2F(double vol, double vcc_real, double factor);
     static double ntcVol2T(int vol, double vcc_real);
-    int fsrMapL[8] = {3,4,2,0,1,7,5,6};
+//    int fsrMapL[8] = {3,4,2,0,1,7,5,6};
+    int fsrMapL[8] = {4,3,2,0,1,6,7,5};
     int fsrMapR[8] = {1,0,2,3,4,5,7,6};
 //    int ntcMapL[4] = {2,1,3,0};
     int ntcMapL[4] = {3,1,0,2};
