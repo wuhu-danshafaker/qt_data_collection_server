@@ -85,6 +85,7 @@ private slots:
     void on_findRecordsBtn_clicked();
     void on_calculateResultBtn_clicked();
     void on_showResultBtn_clicked();
+    void on_fsrCaliBtn_clicked();
 
     void updateTimeAndDisplay();
     void fsrBtnClicked();

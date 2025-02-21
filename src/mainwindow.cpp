@@ -7,6 +7,7 @@
 #include "MyServer.h"
 #include "MySocket.h"
 #include "ui_MainWindow.h"
+#include "caliwindow.h"
 //#include <QGraphicsBlurEffect>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -162,6 +163,7 @@ void MainWindow::on_recordBtn_clicked() {
 
     if(!recording){
         qDebug()<<"restart recording";
+        ui->fsrCaliBtn->setEnabled(false);
         leftFoot->resetPlot();
         rightFoot->resetPlot();
         leftFoot->checkConnection();
@@ -180,7 +182,14 @@ void MainWindow::on_recordBtn_clicked() {
         recording = false;
         leftFoot->pauseDisplay();
         rightFoot->pauseDisplay();
+        ui->fsrCaliBtn->setEnabled(true);
     }
+}
+
+void MainWindow::on_fsrCaliBtn_clicked() {
+    CaliWindow* caliWindow;
+    caliWindow = new CaliWindow();
+    caliWindow->show();
 }
 
 void MainWindow::updateTimeAndDisplay() {
@@ -871,5 +880,7 @@ void MainWindow::on_showResultBtn_clicked() {
         }
     }
 }
+
+
 
 

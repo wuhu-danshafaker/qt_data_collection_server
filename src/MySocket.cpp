@@ -7,9 +7,31 @@
 MySocket::MySocket(QObject *parent) : m_tcpServer(dynamic_cast<MyServer*>(parent)){
     rmt = nullptr;
     msg_last = "";
+//    QFile file("../scripts.fsrFactor.json");
+//    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+//        qDebug() << "Failed to open FSR JSON file.";
+//        return;
+//    }
+//
+//    QByteArray jsonData = file.readAll();
+//    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+//    if (jsonDoc.isNull()) {
+//        qDebug() << "Failed to parse JSON data.";
+//        return;
+//    }
+//    QJsonObject rootObj = jsonDoc.object();
+//    if(rootObj.contains("Left FSR Factor") && rootObj.contains("Right FSR Factor")){
+//        QJsonObject leftObj = rootObj["Left FSR Factor"].toObject();
+//        QJsonObject rightObj = rootObj["Right FSR Factor"].toObject();
+//        for(int i=0;i<8;i++){
+//            leftFsrFactor[i] = leftObj[QString("fsr%1").arg(i)].toDouble();
+//            rightFsrFactor[i] = rightObj[QString("fsr%1").arg(i)].toDouble();
+//        }
+//    }
 }
 
 MySocket::~MySocket(){
+    this->write("CMD: stop record");
     rmt->pause();
     rmt->quit();
     rmt->wait();
@@ -136,6 +158,7 @@ void MySocket::setCsvPath(const QString& name, const QString& saveDir) {
 
 void MySocket::setLeft(bool flag) {
     isLeft = flag;
+//    rmt->setLeft(flag);
 }
 
 

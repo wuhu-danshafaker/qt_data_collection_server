@@ -39,6 +39,10 @@ private:
     QByteArray msg_last = "";
 
     bool isLeft;
+
+    QVector<double> leftFsrFactor = {1,1,1,1,1,1,1,1};
+    QVector<double> rightFsrFactor = {1,1,1,1,1,1,1,1};
+
 public slots:
     void deal_readyRead();
     void deal_disconnect();

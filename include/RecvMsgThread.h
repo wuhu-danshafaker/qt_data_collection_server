@@ -25,15 +25,17 @@ public:
     void resume(){
         thread_running = true;
     }
-
+//    void setLeft(bool flag);
     QQueue<MsgData> *msgQueue;
     QMutex *qMutex;
 
 private:
     bool thread_running;
     QString csvPath;
-    double leftFsrFactor[8] = {1,1,1,1,1,1,1,1};
-    double rightFsrFactor[8] = {1,1,1,1,1,1,1,1};
+//    double leftFsrFactor[8] = {1,1,1,1,1,1,1,1};
+//    double rightFsrFactor[8] = {1,1,1,1,1,1,1,1};
+//    bool isLeft;
+
 signals:
     void resultReady(MsgData result);
 };

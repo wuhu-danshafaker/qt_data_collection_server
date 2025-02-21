@@ -9,7 +9,9 @@
 class MsgData{
 public:
     MsgData();
+    // TODO: 生成时定义fsrFactor 在socket做读取json的处理
     MsgData(bool side, QByteArray& msg);
+    MsgData(bool side, QByteArray& msg, const QVector<double>& left, const QVector<double>& right);
     bool MsgByteExplain();
     void byteInput(QByteArray& msg);
     QString ipByte2Str(const QByteArray& src="");
@@ -36,8 +38,11 @@ private:
 //    int ntcMapL[4] = {2,1,3,0};
     int ntcMapL[4] = {3,1,0,2};
     int ntcMapR[4] = {3,2,1,0};
-    double fsrFactor[8] = {3.55, 4.65, 4.85, 4.6, 4.65, 4.2, 4.55, 3.75};
+//    double fsrFactor[8] = {3.55, 4.65, 4.85, 4.6, 4.65, 4.2, 4.55, 3.75};
 //    double fsrFactorR[8] = {4.8,4.3,4.6,3.3,4.5,3.6,4.1,4.5};
+    QVector<double> leftFsrFactor = {1,1,1,1,1,1,1,1};
+    QVector<double> rightFsrFactor = {1,1,1,1,1,1,1,1};
+
 };
 
 #endif //QT_PROJ_MSGDATA_H

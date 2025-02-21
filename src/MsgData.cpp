@@ -16,6 +16,16 @@ MsgData::MsgData(bool side, QByteArray& msg) {
     vcc = 0;
 }
 
+MsgData::MsgData(bool side, QByteArray &msg, const QVector<double> &left, const QVector<double> &right) {
+    isLeft = side;
+    byteInput(msg);
+
+    isEmpty = true;
+    vcc = 0;
+    leftFsrFactor = left;
+    rightFsrFactor = right;
+}
+
 void MsgData::byteInput(QByteArray& msg) {
     byteMsg = msg;
     if (!byteMsg.isEmpty()){
@@ -41,13 +51,16 @@ bool MsgData::MsgByteExplain() {
             }
             else if(i<9){
                 int idx;
+                double factor;
                 if(isLeft){
                     idx = fsrMapL[i-1];
+                    factor = leftFsrFactor[i-1];
                 } else{
                     idx = fsrMapR[i-1];
+                    factor = rightFsrFactor[i-1];
                 }
 //                fsr[idx] = fsrVol2F(adc_vol[i], vcc, fsrFactor[i-1]);
-                fsr[idx] = fsrVol2F(adc_vol[i], vcc, 1);  // 效果如何？
+                fsr[idx] = fsrVol2F(adc_vol[i], vcc, factor);  // 效果如何？
             }
             else{
                 int idx;
@@ -118,4 +131,6 @@ QString MsgData::ipByte2Str(const QByteArray& src) {
     int ip4 = static_cast<byte>(src_data.at(3));
     return QString("%1.%2.%3.%4").arg(ip1).arg(ip2).arg(ip3).arg(ip4);
 }
+
+
 

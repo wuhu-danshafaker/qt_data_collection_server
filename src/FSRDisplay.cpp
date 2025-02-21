@@ -17,6 +17,7 @@ void FSRDisplay::updateFootPrint(const MsgData& msg) {
         ()->at
         (cnt-2)->value)) : msg.fsr[i];  //不对！导致没有变化了
         result = msg.fsr[i];
+        // TODO: factor这里也要加
         fsrPlot->graph(i)->addData(msg.timeCounter, result); // 中位数滤波
         if(msg.timeCounter>500){
             fsrPlot->graph(i)->data()->removeBefore(200);

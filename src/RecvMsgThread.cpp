@@ -5,28 +5,6 @@ RecvMsgThread::RecvMsgThread() {
     msgQueue = new QQueue<MsgData>();
     csvPath = "../csvData/testData.csv";
     thread_running = false;
-
-    QFile file("../scripts.fsrFactor.json");
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open FSR JSON file.";
-        return;
-    }
-
-    QByteArray jsonData = file.readAll();
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
-    if (jsonDoc.isNull()) {
-        qDebug() << "Failed to parse JSON data.";
-        return;
-    }
-    QJsonObject rootObj = jsonDoc.object();
-    if(rootObj.contains("Left FSR Factor") && rootObj.contains("Right FSR Factor")){
-        QJsonObject leftObj = rootObj["Left FSR Factor"].toObject();
-        QJsonObject rightObj = rootObj["Right FSR Factor"].toObject();
-        for(int i=0;i<8;i++){
-            leftFsrFactor[i] = leftObj[QString("fsr%1").arg(i)].toDouble();
-            rightFsrFactor[i] = rightObj[QString("fsr%1").arg(i)].toDouble();
-        }
-    }
 }
 
 RecvMsgThread::~RecvMsgThread() {
@@ -50,6 +28,10 @@ void RecvMsgThread::run() {
                 for (double i : tmpData.fsr){
                     dataOnce << QString::number(i);
                 }
+//                for (int i=0;i<8;i++){
+//                    double factor = (isLeft)? leftFsrFactor[i]:rightFsrFactor[i];
+//                    dataOnce << QString::number(tmpData.fsr[i]*factor);
+//                }
                 for (double i : tmpData.ntc){
                     dataOnce << QString::number(i);
                 }
@@ -142,3 +124,7 @@ void RecvMsgThread::initCsv(const QString& saveDir, const QString& csvName) {
     header << "IP";
     writeHeaderToCsv(csvPath, header);
 }
+
+//void RecvMsgThread::setLeft(bool flag) {
+//    isLeft = flag;
+//}
