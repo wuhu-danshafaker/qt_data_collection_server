@@ -34,6 +34,7 @@ public:
         return index;
     }
     void setSocket(MySocket *sock);
+    MySocket* getSocket();
     void clearSocket();
     void checkConnection();
     void startDisplay(const QString& name, const QString& saveDir, bool isResume = false);

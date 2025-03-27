@@ -7,27 +7,7 @@
 MySocket::MySocket(QObject *parent) : m_tcpServer(dynamic_cast<MyServer*>(parent)){
     rmt = nullptr;
     msg_last = "";
-//    QFile file("../scripts.fsrFactor.json");
-//    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-//        qDebug() << "Failed to open FSR JSON file.";
-//        return;
-//    }
-//
-//    QByteArray jsonData = file.readAll();
-//    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
-//    if (jsonDoc.isNull()) {
-//        qDebug() << "Failed to parse JSON data.";
-//        return;
-//    }
-//    QJsonObject rootObj = jsonDoc.object();
-//    if(rootObj.contains("Left FSR Factor") && rootObj.contains("Right FSR Factor")){
-//        QJsonObject leftObj = rootObj["Left FSR Factor"].toObject();
-//        QJsonObject rightObj = rootObj["Right FSR Factor"].toObject();
-//        for(int i=0;i<8;i++){
-//            leftFsrFactor[i] = leftObj[QString("fsr%1").arg(i)].toDouble();
-//            rightFsrFactor[i] = rightObj[QString("fsr%1").arg(i)].toDouble();
-//        }
-//    }
+    setFsrFactor();
 }
 
 MySocket::~MySocket(){
@@ -66,7 +46,7 @@ void MySocket::deal_readyRead(){
         }
         // 正常处理数据
         QByteArray msg_slice = msg.mid(idx_header, BYTE_LENGTH);
-        MsgData tmp_data(isLeft, msg_slice);
+        MsgData tmp_data(isLeft, msg_slice, leftFsrFactor, rightFsrFactor, leftTempOffset, rightTempOffset);
         if(ip==tmp_data.ipByte2Str()){
             rmt->qMutex->lock();
             rmt->msgQueue->enqueue(tmp_data);  // 在这里修改成一个函数
@@ -140,7 +120,7 @@ void MySocket::setIpAndPort(QString ipInfo, quint16 portInfo) {
 
 void MySocket::setCsvPath(bool is_Left, const QString& name, const QString& saveDir) {
     QDateTime currentDateTime = QDateTime::currentDateTime();
-    QString timeStr = currentDateTime.toString("MMdd-hh-mm-ss");
+    QString timeStr = currentDateTime.toString("yyMMdd-hh-mm-ss");
     QString foot = (is_Left) ? "left" : "right";
     QString csvName = QString("%1_%2_%3_%4.csv").arg(name, foot, timeStr, ip);
     initRMT(saveDir, csvName);
@@ -149,7 +129,7 @@ void MySocket::setCsvPath(bool is_Left, const QString& name, const QString& save
 void MySocket::setCsvPath(const QString& name, const QString& saveDir) {
     QDateTime currentDateTime = QDateTime::currentDateTime();
     QString timeStr = currentDateTime.toString("MMdd-hh-mm-ss");
-    QString dateStr = currentDateTime.toString("MMdd");
+    QString dateStr = currentDateTime.toString("yyMMdd");
     QString type = "cali";
     QString csvDir = saveDir + "/" + dateStr;
     QString csvName = QString("%1_%2_%3_%4.csv").arg(name, type, timeStr, ip);
@@ -159,6 +139,60 @@ void MySocket::setCsvPath(const QString& name, const QString& saveDir) {
 void MySocket::setLeft(bool flag) {
     isLeft = flag;
 //    rmt->setLeft(flag);
+}
+
+void MySocket::setFsrFactor(const QString& size) {
+    QString filePath = QString("../scripts/fsrFactor%1.json").arg(size);
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open FSR JSON file.";
+        return;
+    }
+
+    QByteArray jsonData = file.readAll();
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+    if (jsonDoc.isNull()) {
+        qDebug() << "Failed to parse JSON data.";
+        return;
+    }
+    QJsonObject rootObj = jsonDoc.object();
+    if(rootObj.contains("Left FSR Factor") && rootObj.contains("Right FSR Factor")){
+        QJsonObject leftObj = rootObj["Left FSR Factor"].toObject();
+        QJsonObject rightObj = rootObj["Right FSR Factor"].toObject();
+        for(int i=0;i<8;i++){
+            leftFsrFactor[i] = leftObj[QString("fsr%1").arg(i+1)].toDouble();
+            rightFsrFactor[i] = rightObj[QString("fsr%1").arg(i+1)].toDouble();
+        }
+        qDebug() << "Set factor: " << leftFsrFactor << "to " << filePath;
+        qDebug() << "Set factor: " << rightFsrFactor << "to " << filePath;
+    }
+}
+
+void MySocket::setTempOffset(const QString& size) {
+    QString filePath = QString("../scripts/tempOffset%1.json").arg(size);
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open FSR JSON file.";
+        return;
+    }
+
+    QByteArray jsonData = file.readAll();
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+    if (jsonDoc.isNull()) {
+        qDebug() << "Failed to parse JSON data.";
+        return;
+    }
+    QJsonObject rootObj = jsonDoc.object();
+    if(rootObj.contains("Left NTC Offset") && rootObj.contains("Right NTC Offset")){
+        QJsonObject leftObj = rootObj["Left NTC Offset"].toObject();
+        QJsonObject rightObj = rootObj["Right NTC Offset"].toObject();
+        for(int i=0;i<4;i++){
+            leftTempOffset[i] = leftObj[QString("ntc%1").arg(i+1)].toDouble();
+            rightTempOffset[i] = rightObj[QString("ntc%1").arg(i+1)].toDouble();
+        }
+        qDebug() << "Set offset: " << leftTempOffset << "to " << filePath;
+        qDebug() << "Set offset: " << rightTempOffset << "to " << filePath;
+    }
 }
 
 

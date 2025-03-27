@@ -31,6 +31,9 @@ public:
     void setCsvPath(bool isLeft, const QString& name, const QString& saveDir);
     void setCsvPath(const QString& name, const QString& saveDir);
     void setLeft(bool flag);
+    void setFsrFactor(const QString& size="");
+    void setTempOffset(const QString& size="");
+
 private:
     RecvMsgThread *rmt;
     QString ip;
@@ -42,6 +45,8 @@ private:
 
     QVector<double> leftFsrFactor = {1,1,1,1,1,1,1,1};
     QVector<double> rightFsrFactor = {1,1,1,1,1,1,1,1};
+    QVector<double> leftTempOffset = {0,0,0,0};
+    QVector<double> rightTempOffset = {0,0,0,0};
 
 public slots:
     void deal_readyRead();

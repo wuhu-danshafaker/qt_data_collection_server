@@ -5,6 +5,7 @@
     <file>footPrintLeft.png</file>
     <file>footPrintRight.png</file>
     <file>qt_icon.png</file>
+    <file>R-C.png</file>
     <file>qt.conf</file>
   </qresource>
 </RCC>

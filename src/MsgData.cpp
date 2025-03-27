@@ -16,14 +16,17 @@ MsgData::MsgData(bool side, QByteArray& msg) {
     vcc = 0;
 }
 
-MsgData::MsgData(bool side, QByteArray &msg, const QVector<double> &left, const QVector<double> &right) {
+MsgData::MsgData(bool side, QByteArray &msg, const QVector<double>& leftF, const QVector<double>& rightF, const
+QVector<double>& leftN, const QVector<double>& rightN) {
     isLeft = side;
     byteInput(msg);
 
     isEmpty = true;
     vcc = 0;
-    leftFsrFactor = left;
-    rightFsrFactor = right;
+    leftFsrFactor = leftF;
+    rightFsrFactor = rightF;
+    leftNtcOffset = leftN;
+    rightNtcOffset = rightN;
 }
 
 void MsgData::byteInput(QByteArray& msg) {
@@ -61,15 +64,19 @@ bool MsgData::MsgByteExplain() {
                 }
 //                fsr[idx] = fsrVol2F(adc_vol[i], vcc, fsrFactor[i-1]);
                 fsr[idx] = fsrVol2F(adc_vol[i], vcc, factor);  // 效果如何？
+                fsr_raw[idx] = fsrVol2F(adc_vol[i], vcc, 1);
             }
             else{
                 int idx;
+                double offset;
                 if(isLeft){
                     idx = ntcMapL[i-9];
+                    offset = leftNtcOffset[i-9];
                 } else{
                     idx = ntcMapR[i-9];
+                    offset = rightNtcOffset[i-9];
                 }
-                ntc[idx] = ntcVol2T(adc_vol[i], vcc);
+                ntc[idx] = ntcVol2T(adc_vol[i], vcc, offset);
             }
         }
 
@@ -113,9 +120,9 @@ double MsgData::fsrVol2F(double vol, double vcc_real, double factor) {
     return vol/vcc_real*factor;
 }
 
-double MsgData::ntcVol2T(int vol, double vcc_real) {
+double MsgData::ntcVol2T(int vol, double vcc_real, double offset) {
     if (vcc_real>0){
-        return (3795.9 - vol*5/vcc_real)/51;
+        return (3795.9 - vol*5/vcc_real)/51 + offset;
     }
     return (3795.9 - vol*5/4.98)/51 ;
 }
@@ -130,6 +137,10 @@ QString MsgData::ipByte2Str(const QByteArray& src) {
     int ip3 = static_cast<byte>(src_data.at(2));
     int ip4 = static_cast<byte>(src_data.at(3));
     return QString("%1.%2.%3.%4").arg(ip1).arg(ip2).arg(ip3).arg(ip4);
+}
+
+bool MsgData::getIsLeft() {
+    return isLeft;
 }
 
 

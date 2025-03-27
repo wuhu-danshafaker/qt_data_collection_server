@@ -11,12 +11,15 @@ public:
     MsgData();
     // TODO: 生成时定义fsrFactor 在socket做读取json的处理
     MsgData(bool side, QByteArray& msg);
-    MsgData(bool side, QByteArray& msg, const QVector<double>& left, const QVector<double>& right);
+    MsgData(bool side, QByteArray& msg, const QVector<double>& leftF, const QVector<double>& rightF, const
+    QVector<double>& leftN, const QVector<double>& rightN);
     bool MsgByteExplain();
     void byteInput(QByteArray& msg);
     QString ipByte2Str(const QByteArray& src="");
+    bool getIsLeft();
     int adc_vol[13];
     double fsr[8];
+    double fsr_raw[8];
     double ntc[4];
     double vcc;
     double imuAGE[9];
@@ -31,7 +34,7 @@ private:
     bool isLeft;
     static double qbyte2double(QByteArray src);
     static double fsrVol2F(double vol, double vcc_real, double factor);
-    static double ntcVol2T(int vol, double vcc_real);
+    static double ntcVol2T(int vol, double vcc_real, double offset);
 //    int fsrMapL[8] = {3,4,2,0,1,7,5,6};
     int fsrMapL[8] = {4,3,2,0,1,6,7,5};
     int fsrMapR[8] = {1,0,2,3,4,5,7,6};
@@ -42,6 +45,8 @@ private:
 //    double fsrFactorR[8] = {4.8,4.3,4.6,3.3,4.5,3.6,4.1,4.5};
     QVector<double> leftFsrFactor = {1,1,1,1,1,1,1,1};
     QVector<double> rightFsrFactor = {1,1,1,1,1,1,1,1};
+    QVector<double> leftNtcOffset = {0,0,0,0};
+    QVector<double> rightNtcOffset = {0,0,0,0};
 
 };
 

@@ -9,7 +9,7 @@ double median(double a, double b, double c){
 
 void FSRDisplay::updateFootPrint(const MsgData& msg) {
     for(int i=0;i<8;i++){
-        qreal ratio = std::min(msg.fsr[i]/40.0, 1.0);  // 3000!
+        qreal ratio = std::min(msg.fsr[i]/400.0, 1.0);  // 3000!
         colors[i] = interpolate(Qt::red, QColor(85, 170, 127), ratio);
         circles[i]->setBrush(QBrush(colors[i]));
         int cnt = fsrPlot->graph(i)->data().data()->size();
@@ -17,7 +17,6 @@ void FSRDisplay::updateFootPrint(const MsgData& msg) {
         ()->at
         (cnt-2)->value)) : msg.fsr[i];  //不对！导致没有变化了
         result = msg.fsr[i];
-        // TODO: factor这里也要加
         fsrPlot->graph(i)->addData(msg.timeCounter, result); // 中位数滤波
         if(msg.timeCounter>500){
             fsrPlot->graph(i)->data()->removeBefore(200);
@@ -256,4 +255,8 @@ void FSRDisplay::resetPlot() {
     fsrPlot->replot(QCustomPlot::rpQueuedReplot);
     imuPlot->replot(QCustomPlot::rpQueuedReplot);
     tempPlot->replot(QCustomPlot::rpQueuedReplot);
+}
+
+MySocket *FSRDisplay::getSocket() {
+    return socket;
 }

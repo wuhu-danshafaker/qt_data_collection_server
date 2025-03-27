@@ -44,8 +44,6 @@ add_executable(qt_proj main.cpp
         ${HEADER_FILES}
         ${QRC_SOURCE_FILE}
         ${APP_ICON_RESOURCE}
-        src/caliwindow.cpp
-        include/caliwindow.h
 )
 
 set_target_properties(qt_proj PROPERTIES

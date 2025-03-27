@@ -7,8 +7,7 @@
 #include "MyServer.h"
 #include "MySocket.h"
 #include "ui_MainWindow.h"
-#include "caliwindow.h"
-//#include <QGraphicsBlurEffect>
+
 
 MainWindow::MainWindow(QWidget *parent) :
         QWidget(parent), ui(new Ui::MainWindow) {
@@ -17,6 +16,10 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowTitle("Oiseau Monitor");
     this->setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
     this->setAttribute(Qt::WA_DeleteOnClose);
+
+    caliWindow = new CaliWindow();
+    caliWindow->setWeightLine(ui->pWeight);
+    caliWindow->setSize(ui->typeComboBox);
     m_server = nullptr;
 
     databaseInit();
@@ -47,11 +50,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->MagCaliStop->setEnabled(false);
 
     folderComboInit();
-//    auto *blurEffect = new QGraphicsBlurEffect;
-//    ui->Body->setGraphicsEffect(blurEffect);
 }
 
 MainWindow::~MainWindow() {
+    database.close();
+
     delete ui;
     delete pTimer;
     delete m_server;
@@ -115,7 +118,7 @@ QString MainWindow::setSaveDir(QString& name, QString& trialType) {
     QDir dir;
     QString targetDir;
     QDateTime currentDateTime = QDateTime::currentDateTime();
-    QString dateStr = currentDateTime.toString("MMdd");
+    QString dateStr = currentDateTime.toString("yyMMdd");
     QString csvDir = QString("../csvData/%1/%2").arg(dateStr, name);
     if(trialType=="Test"){
         targetDir = QString("%1/%2").arg(csvDir, trialType);
@@ -163,7 +166,7 @@ void MainWindow::on_recordBtn_clicked() {
 
     if(!recording){
         qDebug()<<"restart recording";
-        ui->fsrCaliBtn->setEnabled(false);
+        ui->fsrCaliBtn->setEnabled(true);
         leftFoot->resetPlot();
         rightFoot->resetPlot();
         leftFoot->checkConnection();
@@ -182,14 +185,18 @@ void MainWindow::on_recordBtn_clicked() {
         recording = false;
         leftFoot->pauseDisplay();
         rightFoot->pauseDisplay();
-        ui->fsrCaliBtn->setEnabled(true);
+        ui->fsrCaliBtn->setEnabled(false);
     }
 }
 
 void MainWindow::on_fsrCaliBtn_clicked() {
-    CaliWindow* caliWindow;
-    caliWindow = new CaliWindow();
     caliWindow->show();
+    caliWindow->setSocket(leftFoot->getSocket(), rightFoot->getSocket());
+    caliWindow->setCaliEnabled();
+    if(!ui->pWeight->text().isEmpty()){
+        double w = ui->pWeight->text().toDouble();
+        caliWindow->setWeight(w);
+    }
 }
 
 void MainWindow::updateTimeAndDisplay() {
@@ -323,45 +330,93 @@ void MainWindow::databaseInit() {
         qDebug() << "database connected.";
     }
     database.close();
+
+    if (!database.open()){
+        qDebug() << "Error: Failed to connect database." << database.lastError();
+    }
 }
 
 void MainWindow::databaseInsert(const QString& name,
+                                const QString& gender,
                                 const QString& date,
+                                const QString& trailDate,
                                 const QString& age,
                                 const QString& height,
                                 const QString& weight,
                                 const QString& info,
-                                const QString& csv_path) {
-    if (!database.open()){
-        qDebug() << "Error: Failed to connect database." << database.lastError();
-    } else{
-        QSqlQuery sqlQuery;
-//        QString insert_sql = QString("insert into patient "
-//                                     "(id, name, date_time, age, height, weight, information, csv_path) "
-//                                     "values (null, '%1', '%2', %3, %4, %5, '%6', '%7')")
-//                .arg(name, date, age, height, weight, info, csv_path);
-//        sqlQuery.prepare(insert_sql);
-        QString insert_sql = QString("insert into patient "
-                                     "(id, name, date_time, age, height, weight, information, csv_path) "
-                                     "values (:id, :name, :date_time, :age, :height, :weight, :information, "
-                                     ":csv_path)");
-        sqlQuery.prepare(insert_sql);
-        sqlQuery.bindValue(":name", name);
-        sqlQuery.bindValue(":date_time", date);
-        sqlQuery.bindValue(":age", age);
-        sqlQuery.bindValue(":height", height);
-        sqlQuery.bindValue(":weight", weight);
-        sqlQuery.bindValue(":information", info);
-        sqlQuery.bindValue(":csv_path", csv_path);
+                                const QString& csv_path,
+                                const QString& size) {
+    model->setTable("patient"); // 替换为实际的表名
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit); // 手动提交更改
+    if (!model->select()) {
+        qWarning() << "Failed to select data from table:" << model->lastError();
+        return;
+    }
+    int nameColumn = model->fieldIndex("name"); // 获取name列的索引
+    QModelIndexList matches =
+            model->match(model->index(0, nameColumn), Qt::DisplayRole, name, -1, Qt::MatchExactly);
 
-        if(!sqlQuery.exec()){
-            qDebug() << sqlQuery.lastError();
+    if (!matches.isEmpty()) {
+        // name存在，检查trailDate是否包含yyMMdd
+        QModelIndex index = matches.first(); // 获取第一个匹配的索引
+        int trailDateColumn = model->fieldIndex("trailDate"); // 获取trailDate列的索引
+        QString trailDateOld = model->data(model->index(index.row(), trailDateColumn)).toString();
+
+        if (!trailDateOld.contains(trailDate)) {
+            if (!trailDateOld.isEmpty()) {
+                trailDateOld += ",";
+            }
+            trailDateOld += trailDate;
+            if (!model->setData(model->index(index.row(), trailDateColumn), trailDateOld)) {
+                qWarning() << "Failed to update trailDate:" << model->lastError();
+            }
+        }
+
+        int infoColumn = model->fieldIndex("information");
+        QString information = model->data(model->index(index.row(), infoColumn)).toString();
+
+        if (!information.contains(info) && !info.isEmpty()) {
+            if (!information.isEmpty()) {
+                information += ",";
+            }
+            information += info;
+            if (!model->setData(model->index(index.row(), infoColumn), information)) {
+                qWarning() << "Failed to update trailDate:" << model->lastError();
+            }
+        }
+    } else {
+        // name不存在，插入新记录
+        QSqlRecord record = model->record();
+        record.setValue("name", name);
+        record.setValue("trailDate", trailDate);
+        record.setValue("date", date);
+        record.setValue("gender", gender);
+        record.setValue("age", age);
+        record.setValue("height", height);
+        record.setValue("weight", weight);
+        record.setValue("information", info);
+        record.setValue("csv_path", csv_path);
+        if (size == "others"){
+            record.setValue("shoeSize", 0);
         } else{
-            qDebug() << "inserted!";
+            record.setValue("shoeSize", size);
+        }
+
+        // 插入新行
+        if (model->insertRecord(-1, record)) {
+            qDebug() << "Inserted new record for name:" << name;
+        } else {
+            qWarning() << "Failed to insert new record:" << model->lastError();
         }
     }
-    database.close();
-    database.open();
+
+    // 提交所有更改
+    if (!model->submitAll()) {
+        qWarning() << "Failed to submit changes to database:" << model->lastError();
+    }
+
+    renumberIds();
+
 }
 
 void MainWindow::on_addNewDoc_clicked() {
@@ -372,6 +427,8 @@ void MainWindow::on_addNewDoc_clicked() {
     auto *pWeight = patientDoc->findChild<QLineEdit *>("pWeight");
     auto *pInfo = patientDoc->findChild<QTextEdit *>("pInfo");
     auto *pCsvPath = patientDoc->findChild<QLineEdit *>("pCsvPath");
+    auto *pGender = patientDoc->findChild<QComboBox *>("pGender");
+    auto *pSize = patientDoc->findChild<QComboBox *>("typeComboBox");
     Q_ASSERT(pName);
 
     QString name = pName->text();
@@ -382,30 +439,31 @@ void MainWindow::on_addNewDoc_clicked() {
     }
 
     QDateTime currentDateTime = QDateTime::currentDateTime();
-    QString date_time = currentDateTime.toString("yy-MM-dd");
-
+    QString date_time = currentDateTime.toString("yyyy-MM-dd");
+    QString date_time2 = currentDateTime.toString("yyMMdd");
     QString age = pAge->text();
     QString height = pHeight->text();
     QString weight = pWeight->text();
+    QString gender = pGender->currentText();
+    gender = (gender == "男") ? "Male" : (gender == "女") ? "Female" : "Others";
     QString info = pInfo->toPlainText();
-
+    QString size = pSize->currentText();
     QString csvPath = pCsvPath->text();
 
     if(csvPath.isEmpty()){
         QDir dir(QDir::currentPath());
         dir.cdUp();
         QString path = dir.path();
-//        size_t pos = path.lastIndexOf('/');
-        csvPath = path + "/csvData/" + name;
+        csvPath = path + "/csvData/" + date_time2 + "/" + name;
         pCsvPath->setText(csvPath);
     } else{
         QDir dir(csvPath);
         if(dir.exists()){
-            QMessageBox::critical(this, "Failed", "Path not exists.");
+            QMessageBox::critical(this, "Failed", "Path existed.");
             return;
         }
     }
-    databaseInsert(name, date_time, age, height, weight, info, csvPath);
+    databaseInsert(name, gender, date_time, date_time2, age, height, weight, info, csvPath, size);
 }
 
 void MainWindow::on_editCurrentDoc_clicked() {
@@ -441,6 +499,10 @@ void MainWindow::on_databaseCancel_clicked() {
     model->submitAll();
 }
 
+void MainWindow::on_databaseUpdate_clicked() {
+    upDateDatabase();
+}
+
 void MainWindow::on_databaseFind_clicked() {
     QString keyDate = ui->findByDate->text();
     QString keyName = ui->findByName->text();
@@ -467,8 +529,6 @@ void MainWindow::on_databaseFind_clicked() {
         model->select();
     }
     qDebug() << "FIND: " << filterStr;
-
-//    loadSubFoldersToComboBox(ui->comboBox_date, "../csvData");
 }
 
 void MainWindow::on_caliBtn_clicked() {
@@ -578,7 +638,7 @@ void MainWindow::folderComboInit() {
     // 初始化 UI
     QComboBox* comboBoxDate = ui->comboBox_date;
     QComboBox* comboBoxName = ui->comboBox_name;
-//    QComboBox* comboBoxTrail = ui->comboBox_trail;
+    QComboBox* comboBoxTrail = ui->comboBox_trail;
 
     // 初始化文件夹加载器
     folderLoader = new FolderLoader;
@@ -597,11 +657,23 @@ void MainWindow::folderComboInit() {
     });
 
     // 连接信号槽
+//    connect(ui->mainPage, &QTabWidget::currentChanged, this, &MainWindow::updateComboBoxDate);
     connect(comboBoxDate, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::updateComboBoxName);
     connect(comboBoxName, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::updateComboBoxTrail);
+    connect(comboBoxTrail, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            [=](){
+                    ui->checkBox_left->setChecked(false);
+                    ui->checkBox_right->setChecked(false);
+                    ui->checkBox_result->setChecked(false);
+            });
     connect(folderLoader, &FolderLoader::subFoldersLoaded, this, &MainWindow::onSubFoldersLoaded);
 
     // 初始化日期文件夹
+    loadSubFoldersAsync("../csvData", comboBoxDate);
+}
+
+void MainWindow::on_reloadDateBtn_clicked() {
+    QComboBox* comboBoxDate = ui->comboBox_date;
     loadSubFoldersAsync("../csvData", comboBoxDate);
 }
 
@@ -636,6 +708,8 @@ void MainWindow::updateComboBoxTrail() {
 
 void MainWindow::onSubFoldersLoaded(const QStringList &subFolders) {
     auto targetComboBox = qobject_cast<QComboBox*>(sender()->property("targetComboBox").value<QObject*>());
+    qDebug() << targetComboBox;
+    qDebug() << subFolders;
     if (targetComboBox) {
         targetComboBox->clear();
         targetComboBox->addItems(subFolders);
@@ -698,7 +772,7 @@ void MainWindow::on_calculateResultBtn_clicked() {
     auto *process = new QProcess(this);
 
     // 设置要执行的命令和参数
-    QString program = "../scripts/analysis.exe"; // 替换为你的 EXE 路径
+    QString program = "../scripts/analysis/analysis.exe"; // 替换为你的 EXE 路径
     QStringList arguments;
 
     QComboBox* comboBoxDate = ui->comboBox_date;
@@ -710,12 +784,18 @@ void MainWindow::on_calculateResultBtn_clicked() {
     QString csvDataPath = "../csvData";
     QString targetFolder = csvDataPath + "/" + dateFolder + "/" + nameFolder + "/" + trailFolder;
 
+    QString info = getInfoString(nameFolder, dateFolder);
+    QString size = ui->typeComboBox->currentText();
+    arguments << "--todo" << "both";
     arguments << "--csvPath" << targetFolder;
+    arguments << "--info" << info;
+    arguments << "--size" << size;
     // 启动进程
     process->start(program, arguments);
     ui->docDetail->setText("计算中\n");
     connect(process, &QProcess::readyReadStandardOutput, this, [this, process]() {
-//        QByteArray output = process->readAllStandardOutput();
+        QByteArray output = process->readAllStandardOutput();
+        ui->docDetail->append(QString::fromLocal8Bit(output));
         ui->docDetail->append("计算完成");
     });
 
@@ -732,6 +812,32 @@ void MainWindow::on_calculateResultBtn_clicked() {
         }
         process->deleteLater(); // 清理进程对象
     });
+}
+
+void MainWindow::on_reportBtn_clicked() {
+    QComboBox* comboBoxDate = ui->comboBox_date;
+    QComboBox* comboBoxName = ui->comboBox_name;
+    QComboBox* comboBoxTrail = ui->comboBox_trail;
+    QString dateFolder = comboBoxDate->currentText();
+    QString nameFolder = comboBoxName->currentText();
+    QString trailFolder = comboBoxTrail->currentText();
+    QString csvDataPath = "../csvData";
+    QString targetFolder = csvDataPath + "/" + dateFolder + "/" + nameFolder + "/" + trailFolder + "/output";
+
+    QDir dir(targetFolder);
+    if (!dir.exists()) {
+        qDebug() << "Folder does not exist:" << targetFolder;
+        return;
+    }
+    QStringList pdfFiles = dir.entryList({"*.pdf"}, QDir::Files);
+    if (pdfFiles.isEmpty()){
+        qDebug() << "PDF does not exist:" << targetFolder;
+        return;
+    }
+    for (auto &pdfFile: pdfFiles){
+        qDebug() << pdfFile;
+        QDesktopServices::openUrl(QUrl::fromLocalFile(targetFolder + "/" + pdfFile));
+    }
 }
 
 void MainWindow::on_showResultBtn_clicked() {
@@ -878,6 +984,160 @@ void MainWindow::on_showResultBtn_clicked() {
                 }
             }
         }
+    }
+}
+
+void MainWindow::upDateDatabase() {
+    QString csvDataPath = "../csvData";
+    QDir csvDataDir(csvDataPath);
+    if (!csvDataDir.exists()) {
+        qWarning() << "csvData directory does not exist!";
+        return;
+    }
+
+    // 确保模型已正确初始化并加载数据
+    model->setTable("patient"); // 替换为实际的表名
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit); // 手动提交更改
+    if (!model->select()) {
+        qWarning() << "Failed to select data from table:" << model->lastError();
+        return;
+    }
+
+    // 遍历csvData目录下的所有子目录（yyMMdd）
+    for (const QFileInfo& dateDirInfo : csvDataDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+        QString yyMMdd = dateDirInfo.fileName();
+        QDir dateDir(dateDirInfo.absoluteFilePath());
+
+        // 遍历yyMMdd目录下的所有子目录（name）
+        for (const QFileInfo& nameDirInfo : dateDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+            QString name = nameDirInfo.fileName();
+            if (name.contains("test") || name.contains("Test") ) continue;
+            // 在模型中查找name
+            int nameColumn = model->fieldIndex("name"); // 获取name列的索引
+            QModelIndexList matches =
+                    model->match(model->index(0, nameColumn), Qt::DisplayRole, name, -1, Qt::MatchExactly);
+
+            if (!matches.isEmpty()) {
+                // name存在，检查trailDate是否包含yyMMdd
+                QModelIndex index = matches.first(); // 获取第一个匹配的索引
+                int trailDateColumn = model->fieldIndex("trailDate"); // 获取trailDate列的索引
+                QString trailDate = model->data(model->index(index.row(), trailDateColumn)).toString();
+
+                if (!trailDate.contains(yyMMdd)) {
+                    // 如果trailDate不包含yyMMdd，则追加
+                    if (!trailDate.isEmpty()) {
+                        trailDate += ",";
+                    }
+                    trailDate += yyMMdd;
+
+                    // 更新trailDate
+                    if (!model->setData(model->index(index.row(), trailDateColumn), trailDate)) {
+                        qWarning() << "Failed to update trailDate:" << model->lastError();
+                    }
+                }
+            } else {
+                // name不存在，插入新记录
+                QSqlRecord record = model->record();
+                record.setValue("name", name);
+                record.setValue("trailDate", yyMMdd);
+                record.setValue("gender", "Others");
+                QDateTime currentDateTime = QDateTime::currentDateTime();
+                QString date_time = currentDateTime.toString("yyyy-MM-dd");
+                record.setValue("date", date_time);
+                // 插入新行
+                if (model->insertRecord(-1, record)) {
+                    qDebug() << "Inserted new record for name:" << name;
+                } else {
+                    qWarning() << "Failed to insert new record:" << model->lastError();
+                }
+            }
+        }
+    }
+
+    // 提交所有更改
+    if (!model->submitAll()) {
+        qWarning() << "Failed to submit changes to database:" << model->lastError();
+    }
+
+    renumberIds();
+}
+
+void MainWindow::renumberIds() {
+    QSqlDatabase db = model->database();
+    db.transaction(); // 开始事务
+
+    if (!model->select()) {
+        qWarning() << "Failed to select data from table:" << model->lastError();
+        db.rollback(); // 回滚事务
+        return;
+    }
+
+    int idColumn = model->fieldIndex("id");
+
+    for (int row = 0; row < model->rowCount(); ++row) {
+        if (!model->setData(model->index(row, idColumn), row + 1)) {
+            qWarning() << "Failed to update id for row" << row << ":" << model->lastError();
+            db.rollback(); // 回滚事务
+            return;
+        }
+    }
+
+    if (!model->submitAll()) {
+        qWarning() << "Failed to submit changes to database:" << model->lastError();
+        db.rollback(); // 回滚事务
+    } else {
+        db.commit(); // 提交事务
+        qDebug() << "IDs have been renumbered successfully.";
+    }
+}
+
+QString MainWindow::getInfoString(const QString &name, const QString &date) {
+    model->setTable("patient"); // 替换为实际的表名
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit); // 手动提交更改
+    if (!model->select()) {
+        qWarning() << "Failed to select data from table:" << model->lastError();
+        return "";
+    }
+    auto date202x = "20"+date;
+    QDateTime makeTime = QDateTime::fromString(QString(date202x), "yyyyMMdd");
+    QString newDate = makeTime.toString("yyyy-MM-dd");
+    int nameColumn = model->fieldIndex("name"); // 获取name列的索引
+    QModelIndexList matches =
+            model->match(model->index(0, nameColumn), Qt::DisplayRole, name, -1, Qt::MatchExactly);
+
+    QList<QString> queryList = {"gender", "age", "height", "weight"};
+    if (!matches.isEmpty()) {
+        // name存在，检查trailDate是否包含yyMMdd
+        QModelIndex index = matches.first(); // 获取第一个匹配的索引
+        for (auto &col: queryList){
+            int column = model->fieldIndex(col);
+            col = model->data(model->index(index.row(), column)).toString();
+        }
+
+        return QString("%1,%2,%3,%4,%5,%6").arg(name, queryList.at(0), newDate, queryList.at(1), queryList.at(2),
+                                                queryList.at(3));
+    } else {
+        // name不存在，插入新记录
+        return QString("%1,,%2,,,").arg(name, newDate);
+    }
+}
+
+void MainWindow::on_applySizeBtn() {
+    bool isInt;
+    QString nowS = ui->typeComboBox->currentText();
+    int size = nowS.toInt(&isInt);
+    QString offSize = "";
+    if (isInt){
+        size = size + 1 - size%2;
+        offSize = QString("%1").arg(size);
+    }
+    if (auto ls = leftFoot->getSocket()){
+        ls->setFsrFactor(offSize);
+        ls->setTempOffset(offSize);
+    }
+    if (auto rs = rightFoot->getSocket()){
+        rs->setFsrFactor(offSize);
+        rs->setTempOffset(offSize);
     }
 }
 

@@ -16,11 +16,14 @@
 #include <QSqlRecord>
 #include <QProcess>
 
+
+#include "caliwindow.h"
 #include "UdpSocket.h"
 #include "RecvMsgThread.h"
 #include "MsgData.h"
 #include "FSRDisplay.h"
 #include "CaliGraph.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -73,6 +76,7 @@ private slots:
     void on_databaseConfirm_clicked();
     void on_databaseCancel_clicked();
     void on_databaseFind_clicked();
+    void on_databaseUpdate_clicked();
     void on_caliBtn_clicked();
     void on_CaliRecord_clicked();
     void on_AccCaliOn_clicked();
@@ -82,10 +86,14 @@ private slots:
     void on_MagCaliStop_clicked();
     void on_MagCaliSave_clicked();
     void on_setAngleRef_clicked();
+    void on_reloadDateBtn_clicked();
     void on_findRecordsBtn_clicked();
     void on_calculateResultBtn_clicked();
     void on_showResultBtn_clicked();
     void on_fsrCaliBtn_clicked();
+    void on_reportBtn_clicked();
+    void renumberIds();
+    void on_applySizeBtn();
 
     void updateTimeAndDisplay();
     void fsrBtnClicked();
@@ -93,7 +101,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-
+    CaliWindow *caliWindow;
     QSqlDatabase database;
 
     QTimer *pTimer;
@@ -119,12 +127,15 @@ private:
 
     void databaseInit();
     void databaseInsert(const QString& name,
+                        const QString& gender,
                         const QString& date="",
+                        const QString& trailDate="",
                         const QString& age="",
                         const QString& height="",
                         const QString& weight="",
                         const QString& info="",
-                        const QString& csv_path="");
+                        const QString& csv_path="",
+                        const QString& size="");
     void fsrBtnInit();
     void setAsBtnInit();
     void displayInit();
@@ -134,10 +145,13 @@ private:
     void folderComboInit();
     void updateComboBoxName();
     void updateComboBoxTrail();
+    QString getInfoString(const QString& name, const QString& date);
+
 public slots:
     void on_addServerMessage(const QString& message);
     void onSubFoldersLoaded(const QStringList& subFolders);
     void loadSubFoldersAsync(const QString& folderPath, QComboBox* targetComboBox);
+    void upDateDatabase();
 };
 
 

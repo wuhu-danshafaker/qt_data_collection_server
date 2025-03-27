@@ -29,5 +29,4 @@ public:
     void run() override;
 };
 
-
 #endif //QT_PROJ_SOCKETTHREAD_H
